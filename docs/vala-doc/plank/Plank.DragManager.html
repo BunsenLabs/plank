@@ -40,11 +40,11 @@
             </span>
             <div class="leaf_brief_description">
             </div></li>
-          <li class="property"><span class="leaf_code_definition"><span class="main_keyword">public</span> <span class="main_type"><a href="Plank.Items.DockItem.html" class="abstract_class">DockItem</a></span>? <b><a href="Plank.DragManager.DragItem.html" class="property">DragItem</a></b> { <span class="main_keyword">get</span>; }
+          <li class="property"><span class="leaf_code_definition"><span class="main_keyword">public</span> <span class="main_type"><a href="Plank.DockItem.html" class="abstract_class">DockItem</a></span>? <b><a href="Plank.DragManager.DragItem.html" class="property">DragItem</a></b> { <span class="main_keyword">get</span>; }
             </span>
             <div class="leaf_brief_description">
             </div></li>
-          <li class="property"><span class="leaf_code_definition"><span class="main_keyword">public</span> <span class="main_basic_type"><span class="struct">bool</span></span> <b><a href="Plank.DragManager.DragIsDesktopFile.html" class="property">DragIsDesktopFile</a></b> { <span class="main_keyword">get</span>; }
+          <li class="property"><span class="leaf_code_definition"><span class="main_keyword">public</span> <span class="main_basic_type"><span class="struct">bool</span></span> <b><a href="Plank.DragManager.DragNeedsCheck.html" class="property">DragNeedsCheck</a></b> { <span class="main_keyword">get</span>; }
             </span>
             <div class="leaf_brief_description">
             </div></li>
@@ -72,7 +72,7 @@
             <div class="leaf_brief_description"><span class="brief_description">Initializes the drag-manager. Call after the DockWindow is 
                 constructed.</span>
             </div></li>
-          <li class="method"><span class="leaf_code_definition"><span class="main_keyword">public</span> <span class="main_basic_type"><span class="struct">bool</span></span> <b><a href="Plank.DragManager.drop_is_accepted_by.html" class="method">drop_is_accepted_by</a></b> (<span class="main_type"><a href="Plank.Items.DockItem.html" class="abstract_class">DockItem</a></span> item)
+          <li class="method"><span class="leaf_code_definition"><span class="main_keyword">public</span> <span class="main_basic_type"><span class="struct">bool</span></span> <b><a href="Plank.DragManager.drop_is_accepted_by.html" class="method">drop_is_accepted_by</a></b> (<span class="main_type"><a href="Plank.DockItem.html" class="abstract_class">DockItem</a></span> item)
             </span>
             <div class="leaf_brief_description"><span class="brief_description">Whether the current dragged-data is accepted by the given dock-item
               </span>
@@ -84,65 +84,65 @@
         </ul>
         <h3 class="main_title">Inherited Members:</h3>
         <div class="box">
-          <div class="headline">
-            <div class="text">All known members inherited from class GLib.Object</div>
-            <div class="toggle">
-              <img onclick="toggle_box  (this, 'box-content-8')" src="coll_open.png">&nbsp;</div>
+          <div class="headline" onclick="toggle_box (this, 'box-content-8')">All known members inherited from class GLib.Object</div>
+          <div class="content" id="box-content-8">
+            <div class="column">
+              <ul class="navi_inline">
+                <li class="static_method">@new</li>
+                <li class="static_method">new_valist</li>
+                <li class="static_method">newv</li>
+                <li class="method">add_toggle_ref</li>
+                <li class="method">add_weak_pointer</li>
+                <li class="method">bind_property</li>
+                <li class="method">connect</li>
+                <li class="virtual_method">constructed</li>
+                <li class="method">disconnect</li>
+                <li class="virtual_method">dispose</li>
+                <li class="method">dup_data</li>
+                <li class="method">dup_qdata</li>
+                <li class="method">freeze_notify</li>
+                <li class="method">@get</li>
+              </ul>
             </div>
-            <div class="content" id="box-content-8">
-              <div class="column">
-                <ul class="navi_inline">
-                  <li class="static_method">@new</li>
-                  <li class="static_method">newv</li>
-                  <li class="static_method">new_valist</li>
-                  <li class="method">get_type</li>
-                  <li class="method">get_class</li>
-                  <li class="method">@ref</li>
-                  <li class="method">unref</li>
-                  <li class="method">ref_sink</li>
-                  <li class="method">weak_ref</li>
-                  <li class="method">weak_unref</li>
-                  <li class="method">add_weak_pointer</li>
-                  <li class="method">remove_weak_pointer</li>
-                </ul>
-              </div>
-              <div class="column">
-                <ul class="navi_inline">
-                  <li class="method">@get</li>
-                  <li class="method">@set</li>
-                  <li class="method">get_property</li>
-                  <li class="method">set_property</li>
-                  <li class="method">get_data</li>
-                  <li class="method">set_data</li>
-                  <li class="method">set_data_full</li>
-                  <li class="method">steal_data</li>
-                  <li class="method">get_qdata</li>
-                  <li class="method">set_qdata</li>
-                  <li class="method">set_qdata_full</li>
-                  <li class="method">steal_qdata</li>
-                </ul>
-              </div>
-              <div class="column">
-                <ul class="navi_inline">
-                  <li class="method">freeze_notify</li>
-                  <li class="method">thaw_notify</li>
-                  <li class="virtual_method">dispose</li>
-                  <li class="virtual_method">constructed</li>
-                  <li class="method">notify_property</li>
-                  <li class="method">connect</li>
-                  <li class="method">disconnect</li>
-                  <li class="method">add_toggle_ref</li>
-                  <li class="method">remove_toggle_ref</li>
-                  <li class="method">bind_property</li>
-                  <li class="signal">notify</li>
-                  <li class="field">ref_count</li>
-                </ul>
-              </div>
+            <div class="column">
+              <ul class="navi_inline">
+                <li class="method">get_class</li>
+                <li class="method">get_data</li>
+                <li class="method">get_property</li>
+                <li class="method">get_qdata</li>
+                <li class="method">get_type</li>
+                <li class="method">notify_property</li>
+                <li class="method">@ref</li>
+                <li class="method">ref_sink</li>
+                <li class="method">replace_data</li>
+                <li class="method">replace_qdata</li>
+                <li class="method">remove_toggle_ref</li>
+                <li class="method">remove_weak_pointer</li>
+                <li class="method">@set</li>
+              </ul>
+            </div>
+            <div class="column">
+              <ul class="navi_inline">
+                <li class="method">set_data</li>
+                <li class="method">set_data_full</li>
+                <li class="method">set_property</li>
+                <li class="method">set_qdata</li>
+                <li class="method">set_qdata_full</li>
+                <li class="method">steal_data</li>
+                <li class="method">steal_qdata</li>
+                <li class="method">thaw_notify</li>
+                <li class="method">unref</li>
+                <li class="method">weak_ref</li>
+                <li class="method">weak_unref</li>
+                <li class="signal">notify</li>
+                <li class="field">ref_count</li>
+              </ul>
             </div>
           </div>
         </div>
-      </div><br/>
-      <div class="site_footer">Generated by <a href="http://www.valadoc.org/">Valadoc</a>
       </div>
-    </body>
-  </html>
+    </div><br/>
+    <div class="site_footer">Generated by <a href="http://www.valadoc.org/">Valadoc</a>
+    </div>
+  </body>
+</html>

@@ -17,10 +17,7 @@
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-using Plank.Drawing;
-using Plank.Services;
-
-namespace Plank.Items
+namespace Plank
 {
 	/**
 	 * A dock item for files or folders on the dock.
@@ -141,7 +138,7 @@ namespace Plank.Items
 		/**
 		 * {@inheritDoc}
 		 */
-		protected override void draw_icon_fast (DockSurface surface)
+		protected override void draw_icon_fast (Surface surface)
 		{
 			unowned Cairo.Context cr = surface.Context;
 			var width = surface.Width;
@@ -175,7 +172,7 @@ namespace Plank.Items
 		/**
 		 * {@inheritDoc}
 		 */
-		protected override void draw_icon (DockSurface surface)
+		protected override void draw_icon (Surface surface)
 		{
 			if (!is_valid () || !has_default_icon_match ()) {
 				base.draw_icon (surface);
@@ -189,11 +186,7 @@ namespace Plank.Items
 			
 			draw_icon_fast (surface);
 			
-#if HAVE_GEE_0_8
 			var icons = new Gee.HashMap<string, string> ();
-#else
-			var icons = new Gee.HashMap<string, string> (str_hash, str_equal);
-#endif
 			var keys = new Gee.ArrayList<string> ();
 			
 			foreach (var file in get_files ()) {
@@ -216,11 +209,7 @@ namespace Plank.Items
 			var icon_height = (int) ((height - 80 * radius / 33.0) / 2.0);
 			var offset = (int) ((width - 2 * icon_width) / 3.0);
 			
-#if HAVE_GEE_0_8
 			keys.sort ();
-#else
-			keys.sort ((CompareFunc) strcmp);
-#endif
 			foreach (var s in keys) {
 				var x = pos % 2;
 				int y = pos / 2;
@@ -241,28 +230,28 @@ namespace Plank.Items
 		 */
 		public void launch ()
 		{
-			Services.System.open (OwnedFile);
-			ClickedAnimation = Animation.BOUNCE;
+			System.get_default ().open (OwnedFile);
+			ClickedAnimation = AnimationType.BOUNCE;
 			LastClicked = GLib.get_monotonic_time ();
 		}
 		
 		/**
 		 * {@inheritDoc}
 		 */
-		protected override Animation on_clicked (PopupButton button, Gdk.ModifierType mod, uint32 event_time)
+		protected override AnimationType on_clicked (PopupButton button, Gdk.ModifierType mod, uint32 event_time)
 		{
 			if (button == PopupButton.MIDDLE) {
 				launch ();
-				return Animation.BOUNCE;
+				return AnimationType.BOUNCE;
 			}
 			
 			// this actually only happens if its a file, not a directory
 			if (button == PopupButton.LEFT) {
 				launch ();
-				return Animation.BOUNCE;
+				return AnimationType.BOUNCE;
 			}
 			
-			return Animation.NONE;
+			return AnimationType.NONE;
 		}
 		
 		/**
@@ -280,11 +269,7 @@ namespace Plank.Items
 		{
 			var items = new Gee.ArrayList<Gtk.MenuItem> ();
 		
-#if HAVE_GEE_0_8
 			var menu_items = new Gee.HashMap<string, Gtk.MenuItem> ();
-#else
-			var menu_items = new Gee.HashMap<string, Gtk.MenuItem> (str_hash, str_equal);
-#endif
 			var keys = new Gee.ArrayList<string> ();
 			
 			foreach (var file in get_files ()) {
@@ -295,8 +280,8 @@ namespace Plank.Items
 					ApplicationDockItem.parse_launcher (uri, out icon, out text);
 					item = create_menu_item (text, icon, true);
 					item.activate.connect (() => {
-						Services.System.launch (file);
-						ClickedAnimation = Animation.BOUNCE;
+						System.get_default ().launch (file);
+						ClickedAnimation = AnimationType.BOUNCE;
 						LastClicked = GLib.get_monotonic_time ();
 					});
 				} else {
@@ -305,8 +290,8 @@ namespace Plank.Items
 					text = text.replace ("_", "__");
 					item = create_menu_item (text, icon, true);
 					item.activate.connect (() => {
-						Services.System.open (file);
-						ClickedAnimation = Animation.BOUNCE;
+						System.get_default ().open (file);
+						ClickedAnimation = AnimationType.BOUNCE;
 						LastClicked = GLib.get_monotonic_time ();
 					});
 				}
@@ -316,21 +301,21 @@ namespace Plank.Items
 				keys.add (key);
 			}
 			
-#if HAVE_GEE_0_8
 			keys.sort ();
-#else
-			keys.sort ((CompareFunc) strcmp);
-#endif
 			foreach (var s in keys)
 				items.add (menu_items.get (s));
 			
 			if (keys.size > 0)
 				items.add (new Gtk.SeparatorMenuItem ());
 			
-			var delete_item = new Gtk.CheckMenuItem.with_mnemonic (_("_Keep in Dock"));
-			delete_item.active = true;
-			delete_item.activate.connect (() => delete ());
-			items.add (delete_item);
+			unowned DefaultApplicationDockItemProvider? default_provider = (Container as DefaultApplicationDockItemProvider);
+			if (default_provider != null
+				&& !default_provider.Prefs.LockItems) {
+				var delete_item = new Gtk.CheckMenuItem.with_mnemonic (_("_Keep in Dock"));
+				delete_item.active = true;
+				delete_item.activate.connect (() => delete ());
+				items.add (delete_item);
+			}
 			
 			var item = create_menu_item (_("_Open in File Browser"), "gtk-open");
 			item.activate.connect (() => {
@@ -345,10 +330,14 @@ namespace Plank.Items
 		{
 			var items = new Gee.ArrayList<Gtk.MenuItem> ();
 			
-			var delete_item = new Gtk.CheckMenuItem.with_mnemonic (_("_Keep in Dock"));
-			delete_item.active = true;
-			delete_item.activate.connect (() => delete ());
-			items.add (delete_item);
+			unowned DefaultApplicationDockItemProvider? default_provider = (Container as DefaultApplicationDockItemProvider);
+			if (default_provider != null
+				&& !default_provider.Prefs.LockItems) {
+				var delete_item = new Gtk.CheckMenuItem.with_mnemonic (_("_Keep in Dock"));
+				delete_item.active = true;
+				delete_item.activate.connect (() => delete ());
+				items.add (delete_item);
+			}
 			
 			var item = create_menu_item (_("_Open"), "gtk-open");
 			item.activate.connect (launch);
@@ -356,8 +345,8 @@ namespace Plank.Items
 			
 			item = create_menu_item (_("Open Containing _Folder"), "folder");
 			item.activate.connect (() => {
-				Services.System.open (OwnedFile.get_parent ());
-				ClickedAnimation = Animation.BOUNCE;
+				System.get_default ().open (OwnedFile.get_parent ());
+				ClickedAnimation = AnimationType.BOUNCE;
 				LastClicked = GLib.get_monotonic_time ();
 			});
 			items.add (item);

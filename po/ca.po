@@ -7,23 +7,29 @@ msgid ""
 msgstr ""
 "Project-Id-Version: plank\n"
 "Report-Msgid-Bugs-To: FULL NAME <EMAIL@ADDRESS>\n"
-"POT-Creation-Date: 2015-10-08 19:57+0000\n"
-"PO-Revision-Date: 2015-06-08 22:41+0000\n"
-"Last-Translator: Adolfo Jayme <fitoschido@gmail.com>\n"
+"POT-Creation-Date: 2016-02-21 09:20+0000\n"
+"PO-Revision-Date: 2016-02-17 00:36+0000\n"
+"Last-Translator: José Alfredo Múrcia Andrés <joamuran@gmail.com>\n"
 "Language-Team: Catalan <ca@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Launchpad-Export-Date: 2015-10-09 05:23+0000\n"
-"X-Generator: Launchpad (build 17802)\n"
+"X-Launchpad-Export-Date: 2016-02-22 05:40+0000\n"
+"X-Generator: Launchpad (build 17925)\n"
 
-#: ../data/plank.appdata.xml.in.h:1
+#: ../data/plank.appdata.xml.in.h:1 ../data/plank.desktop.in.h:1
+msgid "Stupidly simple."
+msgstr "Estúpidament simple."
+
+#: ../data/plank.appdata.xml.in.h:2
 msgid ""
 "Plank is meant to be the simplest dock on the planet. The goal is to provide "
 "just what a dock needs and absolutely nothing more."
 msgstr ""
+"El Plank pretèn ser el dock més simple del planeta. El seu objectiu és "
+"proporcionar allò que un dock necessita, i cap altra cosa més."
 
-#: ../data/plank.appdata.xml.in.h:2
+#: ../data/plank.appdata.xml.in.h:3
 msgid ""
 "It is, however, a library which can be extended to create other dock "
 "programs with more advanced features. Thus, Plank is the underlying "
@@ -31,10 +37,12 @@ msgid ""
 "core features while Docky extends it to add fancier things like Docklets, "
 "painters, settings dialogs, etc."
 msgstr ""
-
-#: ../data/plank.desktop.in.h:1
-msgid "Plank. Stupidly simple."
-msgstr "Plank. Estúpidament simple."
+"No obstant això, es tracta d'una llibreria que es pot extendre per tal de "
+"crear altres programes acoblats amb característiques més avançades. Així "
+"doncs, el Plank és la tecnología subjacent per al Docky (a partir de la "
+"versió 3.0.0), i té com a objectiu proporcionar totes les característiques "
+"bàsiques, mentre que el Docky esten aquestes per incorporar coses més "
+"elegants com Docklets, pintors, quadres de diàleg d'ajustos, etc."
 
 #: ../data/ui/preferences.ui.h:1
 msgid "Theme:"
@@ -82,11 +90,11 @@ msgstr "Al centre"
 
 #: ../data/ui/preferences.ui.h:12
 msgid "On Primary Display:"
-msgstr ""
+msgstr "A la pantalla principal:"
 
 #: ../data/ui/preferences.ui.h:13
 msgid "Offset in percent from the center of the screen-edge"
-msgstr ""
+msgstr "Desplaçament en percentatge des del centre de la vora de la pantalla"
 
 #: ../data/ui/preferences.ui.h:14
 msgid "Icon Alignment:"
@@ -98,9 +106,9 @@ msgstr "Mida de les icones:"
 
 #: ../data/ui/preferences.ui.h:16
 msgid "Icon Zoom:"
-msgstr ""
+msgstr "Escala de les icones:"
 
-#: ../data/ui/preferences.ui.h:17 ../lib/Widgets/PreferencesWindow.vala:95
+#: ../data/ui/preferences.ui.h:17
 msgid "Appearance"
 msgstr "Aparença"
 
@@ -114,105 +122,127 @@ msgstr "Ocultació automàtica"
 
 #: ../data/ui/preferences.ui.h:20
 msgid "Dodge maximized window"
-msgstr ""
+msgstr "Evita les finestres maximitzades"
 
 #: ../data/ui/preferences.ui.h:21
 msgid "Window Dodge"
-msgstr ""
+msgstr "Esquiva les finestres"
 
 #: ../data/ui/preferences.ui.h:22
 msgid "Dodge active window"
-msgstr ""
+msgstr "Evadeix la finestra activa"
 
 #: ../data/ui/preferences.ui.h:23
 msgid "Hide Dock"
-msgstr ""
+msgstr "Oculta el dock"
 
 #: ../data/ui/preferences.ui.h:24
 msgid "Hide Delay:"
-msgstr ""
+msgstr "Retard en l'ocultació:"
 
 #: ../data/ui/preferences.ui.h:25
 msgid "Delay in ms before hiding the dock"
-msgstr ""
+msgstr "Retard en milisegons abans d'amagar el dock"
 
 #: ../data/ui/preferences.ui.h:26
 msgid "Unhide Delay:"
-msgstr ""
+msgstr "Retard en mostrar:"
 
 #: ../data/ui/preferences.ui.h:27
 msgid "Delay in ms before showing the dock"
-msgstr ""
+msgstr "Retard en milisegons abans de mostrar el dock"
 
 #: ../data/ui/preferences.ui.h:28
 msgid "Pressure Reveal:"
-msgstr ""
+msgstr "Pressió per mostrar:"
 
 #: ../data/ui/preferences.ui.h:29
 msgid "Item Management"
-msgstr ""
+msgstr "Gestió d'elements"
 
 #: ../data/ui/preferences.ui.h:30
 msgid "Show Unpinned:"
-msgstr ""
+msgstr "Mostra elements desancorats:"
 
 #: ../data/ui/preferences.ui.h:31
 msgid "Restrict to Workspace:"
-msgstr ""
+msgstr "Restingeix a l'àrea de treball:"
 
 #: ../data/ui/preferences.ui.h:32
 msgid "Lock Icons:"
-msgstr ""
+msgstr "Bloca les icones:"
 
 #: ../data/ui/preferences.ui.h:33
 msgid "Automatic Pinning:"
-msgstr ""
+msgstr "Ancora automàticament:"
 
 #: ../data/ui/preferences.ui.h:34
 msgid "Show Item for Dock:"
-msgstr ""
+msgstr "Mostra l'element del Dock:"
 
-#: ../data/ui/preferences.ui.h:35 ../lib/Widgets/PreferencesWindow.vala:96
+#: ../data/ui/preferences.ui.h:35
 msgid "Behaviour"
 msgstr "Comportament"
 
-#: ../lib/Items/ApplicationDockItem.vala:454
-#: ../lib/Items/FileDockItem.vala:330 ../lib/Items/FileDockItem.vala:348
+#: ../data/ui/preferences.ui.h:36
+msgid "Docklets"
+msgstr "Miniaplicacions"
+
+#: ../lib/DragManager.vala:477 ../lib/Items/PlaceholderDockItem.vala:51
+msgid "Drop to add to dock"
+msgstr "Deixa anar per afegir al dock"
+
+#: ../lib/Factories/AbstractMain.vala:365 ../src/Main.vala:75
+msgid "translator-credits"
+msgstr ""
+"Launchpad Contributions:\n"
+"  Adolfo Jayme https://launchpad.net/~fitojb\n"
+"  Alfredo Hernández https://launchpad.net/~aldomann\n"
+"  José Alfredo Múrcia Andrés https://launchpad.net/~joamuran\n"
+"  Rico Tzschichholz https://launchpad.net/~ricotz"
+
+#: ../lib/Items/ApplicationDockItem.vala:446
+#: ../lib/Items/FileDockItem.vala:314 ../lib/Items/FileDockItem.vala:336
 msgid "_Keep in Dock"
 msgstr "_Ancora al dock"
 
-#: ../lib/Items/ApplicationDockItem.vala:462
+#: ../lib/Items/ApplicationDockItem.vala:454
 msgid "_Close All"
 msgstr "Tan_ca-ho tot"
 
-#: ../lib/Items/ApplicationDockItem.vala:462
+#: ../lib/Items/ApplicationDockItem.vala:454
 msgid "_Close"
 msgstr "_Tanca"
 
-#: ../lib/Items/FileDockItem.vala:335
+#: ../lib/Items/ApplicationDockItem.vala:526
+#, c-format
+msgid "Drop to open with %s"
+msgstr "Deixa anar per obrir amb %s"
+
+#: ../lib/Items/FileDockItem.vala:320
 msgid "_Open in File Browser"
 msgstr "_Obre al navegador de fitxers"
 
-#: ../lib/Items/FileDockItem.vala:353
+#: ../lib/Items/FileDockItem.vala:342
 msgid "_Open"
 msgstr "_Obre"
 
-#: ../lib/Items/FileDockItem.vala:357
+#: ../lib/Items/FileDockItem.vala:346
 msgid "Open Containing _Folder"
 msgstr "Obre la _carpeta contenidora"
 
 #: ../lib/Items/PlaceholderDockItem.vala:37
 msgid "Drop applications or files here"
-msgstr ""
+msgstr "Deixa aplicacions o fitxers aqui"
 
-#: ../lib/Items/PlankDockItem.vala:77
+#: ../lib/Items/PlankDockItem.vala:73
 msgid "Get _Help Online..."
 msgstr "Obteniu _ajuda en línia…"
 
-#: ../lib/Items/PlankDockItem.vala:81
+#: ../lib/Items/PlankDockItem.vala:77
 msgid "_Translate This Application..."
 msgstr "_Traduïu aquesta aplicació…"
 
-#: ../lib/Widgets/PreferencesWindow.vala:70
+#: ../lib/Widgets/PreferencesWindow.vala:94
 msgid "Preferences"
 msgstr "Preferències"

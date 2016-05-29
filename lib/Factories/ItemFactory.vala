@@ -17,13 +17,10 @@
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-using Plank.Items;
-using Plank.Services;
-
-namespace Plank.Factories
+namespace Plank
 {
 	/**
-	 * An item factory.  Creates {@link Items.DockItem}s based on .dockitem files.
+	 * An item factory.  Creates {@link DockItem}s based on .dockitem files.
 	 */
 	public class ItemFactory : GLib.Object
 	{
@@ -94,20 +91,26 @@ namespace Plank.Factories
 		public File launchers_dir;
 		
 		/**
-		 * Creates a new {@link Items.DockElement} from a .dockitem.
+		 * Creates a new {@link DockElement} from a .dockitem.
 		 *
 		 * @param file the {@link GLib.File} of .dockitem file to parse
-		 * @return the new {@link Items.DockElement} created
+		 * @return the new {@link DockElement} created
 		 */
 		public virtual DockElement make_element (GLib.File file)
 		{
-			return default_make_element (file, get_launcher_from_dockitem (file));
+			var launcher = get_launcher_from_dockitem (file);
+			
+			Docklet? docklet;
+			if ((docklet = DockletManager.get_default ().get_docklet_by_uri (launcher)) != null)
+				return docklet.make_element (launcher, file);
+			
+			return default_make_element (file, launcher);
 		}
 		
 		/**
-		 * Creates a new {@link Items.PlankDockItem} for the dock itself.
+		 * Creates a new {@link PlankDockItem} for the dock itself.
 		 *
-		 * @return the new {@link Items.PlankDockItem} created
+		 * @return the new {@link PlankDockItem} created
 		 */
 		public virtual DockItem get_item_for_dock ()
 		{
@@ -115,11 +118,11 @@ namespace Plank.Factories
 		}
 		
 		/**
-		 * Creates a new {@link Items.DockElement} for a launcher parsed from a .dockitem.
+		 * Creates a new {@link DockElement} for a launcher parsed from a .dockitem.
 		 *
 		 * @param file the {@link GLib.File} of .dockitem file that was parsed
 		 * @param launcher the launcher name from the .dockitem
-		 * @return the new {@link Items.DockElement} created
+		 * @return the new {@link DockElement} created
 		 */
 		protected DockElement default_make_element (GLib.File file, string launcher)
 		{
@@ -143,6 +146,10 @@ namespace Plank.Factories
 				unowned string group_name = typeof (DockItemPreferences).name ();
 				if (keyfile.has_group (group_name))
 					return keyfile.get_string (group_name, "Launcher");
+				
+				// 0.10.1 > 0.10.9/0.11.x
+				if (keyfile.has_group ("PlankItemsDockItemPreferences"))
+					return keyfile.get_string ("PlankItemsDockItemPreferences", "Launcher");
 			} catch (Error e) {
 				warning ("%s (%s)", e.message, file.get_basename ());
 			}
@@ -157,26 +164,36 @@ namespace Plank.Factories
 		 * @param ordering a ";;"-separated string to be used to order the loaded DockItems
 		 * @return the new List of DockItems
 		 */
-		public Gee.ArrayList<DockItem> load_items (GLib.File source_dir, string? ordering = null)
+		public Gee.ArrayList<DockElement> load_elements (GLib.File source_dir, string[]? ordering = null)
 		{
-			var result = new Gee.ArrayList<DockItem> ();
+			var result = new Gee.ArrayList<DockElement> ();
 			
 			if (!source_dir.query_exists ()) {
 				critical ("Given folder '%s' does not exist.", source_dir.get_path ());
 				return result;
 			}
 
-			debug ("Loading dock items from '%s'", source_dir.get_path ());
+			debug ("Loading dock elements from '%s'", source_dir.get_path ());
+			
+			var elements = new Gee.HashMap<string,DockElement> ();
 			
 			try {
 				var enumerator = source_dir.enumerate_children (FileAttribute.STANDARD_NAME + "," + FileAttribute.STANDARD_IS_HIDDEN, 0);
 				FileInfo info;
 				while ((info = enumerator.next_file ()) != null) {
-					if (info.get_is_hidden () || !info.get_name ().has_suffix (".dockitem"))
+					var filename = info.get_name ();
+					if (info.get_is_hidden () || !filename.has_suffix (".dockitem"))
 						continue;
 					
-					var file = source_dir.get_child (info.get_name ());
+					var file = source_dir.get_child (filename);
 					var element = make_element (file);
+					
+					unowned DockItemProvider? provider = (element as DockItemProvider);
+					if (provider != null) {
+						elements.set (filename, element);
+						continue;
+					}
+					
 					unowned DockItem? item = (element as DockItem);
 					if (item == null)
 						continue;
@@ -190,47 +207,30 @@ namespace Plank.Factories
 						warning ("The launcher '%s' in dock item '%s' does not exist. Removing '%s'.", item.Launcher, file.get_path (), item.DockItemFilename);
 						item.delete ();
 					} else {
-						result.add (item);
+						elements.set (filename, element);
 					}
 				}
 			} catch (Error e) {
-				critical ("Error loading dock items from '%s'. (%s)", source_dir.get_path () ?? "", e.message);
+				critical ("Error loading dock elements from '%s'. (%s)", source_dir.get_path () ?? "", e.message);
 			}
 			
-			if (ordering == null)
-				return result;
+			if (ordering != null)
+				foreach (unowned string dockitem in ordering) {
+					DockElement? element;
+					elements.unset (dockitem, out element);
+					if (element != null)
+						result.add (element);
+				}
 			
-			var existing_items = new Gee.ArrayList<DockItem> ();
-			var new_items = new Gee.ArrayList<DockItem> ();
-			
-			foreach (var item in result) {
-				if (ordering.contains (item.DockItemFilename))
-					existing_items.add (item);
-				else
-					new_items.add (item);
-			}
-			
-			result.clear ();
-			
-			// add saved dockitems based on their serialized order
-			var dockitems = ordering.split (";;");
-			foreach (unowned string dockitem in dockitems)
-				foreach (var item in existing_items)
-					if (dockitem == item.DockItemFilename) {
-						result.add (item);
-						break;
-					}
-			
-			// add new dockitems
-			foreach (var item in new_items)
-				result.add (item);
+			result.add_all (elements.values);
+			elements.clear ();
 			
 			return result;
 		}
 		
-		unowned DockItem? find_item_for_uri (Gee.ArrayList<DockItem> items, string uri)
+		unowned DockItem? find_item_for_uri (Gee.ArrayList<DockElement> elements, string uri)
 		{
-			foreach (var element in items) {
+			foreach (var element in elements) {
 				unowned DockItem? item = (element as DockItem);
 				if (item != null && item.Launcher == uri)
 					return item;
@@ -352,16 +352,24 @@ namespace Plank.Factories
 			if (target_dir == null)
 				target_dir = launchers_dir;
 			
-			var launcher_file = File.new_for_uri (uri);
+			bool is_valid = false;
+			string basename;
+			if (uri.has_prefix (DOCKLET_URI_PREFIX)) {
+				is_valid = true;
+				basename = uri.substring (10);
+			} else {
+				var launcher_file = File.new_for_uri (uri);
+				is_valid = launcher_file.query_exists ();
+				basename = (launcher_file.get_basename () ?? "unknown");
+			}
 			
-			if (launcher_file.query_exists ()) {
+			if (is_valid) {
 				var file = new KeyFile ();
 				
-				file.set_string (typeof (Items.DockItemPreferences).name (), "Launcher", uri);
+				file.set_string (typeof (DockItemPreferences).name (), "Launcher", uri);
 				
 				try {
 					// find a unique file name, based on the name of the launcher
-					var basename = (launcher_file.get_basename () ?? "unknown");
 					var index_of_last_dot = basename.last_index_of (".");
 					var launcher_base = (index_of_last_dot >= 0 ? basename.slice (0, index_of_last_dot) : basename);
 					var dockitem = "%s.dockitem".printf (launcher_base);

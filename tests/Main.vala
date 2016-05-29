@@ -17,16 +17,12 @@
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-using Plank.Drawing;
-using Plank.Factories;
-using Plank.Services;
+using Plank;
 
-using Plank.Services.Windows;
-
-namespace Plank.Tests
+namespace PlankTests
 {
 	public const string TEST_ICON = Config.DATA_DIR + "/test-icon.svg";
-	public const string TEST_DOCK_NAME = "dock1";
+	public const string TEST_DOCK_NAME = "test1";
 	public const uint IO_WAIT_MS = 1500;
 	public const uint EVENT_WAIT_MS = 100;
 	public const uint X_WAIT_MS = 200;

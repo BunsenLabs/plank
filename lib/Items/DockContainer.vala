@@ -18,9 +18,7 @@
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-using Plank.Services;
-
-namespace Plank.Items
+namespace Plank
 {
 	/**
 	 * A container and controller class for managing dock elements on a dock.
@@ -230,11 +228,36 @@ namespace Plank.Items
 		}
 		
 		/**
-		 * Removes all dock-elements from the collection.
+		 * Removes all given dock-elements from the collection.
+		 *
+		 * @param elements the dock-elements to remove
+		 * @return whether removing the elements was successful
+		 */
+		public bool remove_all (Gee.ArrayList<DockElement> elements)
+		{
+			bool result = true;
+			
+			foreach (var element in elements) {
+				if (!internal_elements.contains (element)) {
+					critical ("Element '%s' does not exist in this DockContainer.", element.Text);
+					result = false;
+					continue;
+				}
+				
+				remove_without_signaling (element);
+			}
+			
+			update_visible_elements ();
+			
+			return result;
+		}
+		
+		/**
+		 * Clears and therefore removes all dock-elements from the collection.
 		 *
 		 * @return whether removing the elements was successful
 		 */
-		public bool remove_all ()
+		public bool clear ()
 		{
 			var elements = new Gee.HashSet<DockElement> ();
 			elements.add_all (internal_elements);

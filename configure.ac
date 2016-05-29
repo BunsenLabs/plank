@@ -2,7 +2,7 @@
 m4_define([plank_released], [1])
 
 m4_define([plank_major_version], [0])
-m4_define([plank_minor_version], [10])
+m4_define([plank_minor_version], [11])
 m4_define([plank_micro_version], [1])
 m4_define([plank_nano_version], [0])
 
@@ -11,7 +11,7 @@ m4_define([plank_nano_version], [0])
 #  increment current and set revision to 0
 # If interfaces have been added since last release, increment age
 # If interfaces have been removed since last release, set age to 0
-m4_define([plank_lt_current], [0])
+m4_define([plank_lt_current], [1])
 m4_define([plank_lt_revision], [0])
 m4_define([plank_lt_age], [0])
 
@@ -63,6 +63,8 @@ PKG_PROG_PKG_CONFIG([0.21])
 
 LT_LIB_M
 
+GLIB_GSETTINGS
+
 AC_SUBST([CFLAGS])
 AC_SUBST([CPPFLAGS])
 AC_SUBST([LDFLAGS])
@@ -85,7 +87,7 @@ AC_SUBST([PLANK_MICRO_VERSION])
 PLANK_NANO_VERSION=plank_nano_version
 AC_SUBST([PLANK_NANO_VERSION])
 
-API_VERSION=0.3
+API_VERSION=0.11
 AC_SUBST([API_VERSION])
 
 
@@ -106,8 +108,8 @@ fi
 # -----------------------------------------------------------
 # Dependencies
 # -----------------------------------------------------------
-GTK_MIN_VERSION=3.4.0
-GLIB_MIN_VERSION=2.32.0
+GTK_MIN_VERSION=3.10.0
+GLIB_MIN_VERSION=2.40.0
 GDK_PIXBUF_MIN_VERSION=2.26.0
 BAMF_MIN_VERSION=0.2.92
 CAIRO_MIN_VERSION=1.10
@@ -117,26 +119,34 @@ PLANK_CORE_PKGS="gobject-2.0 >= $GLIB_MIN_VERSION \
                  gthread-2.0 >= $GLIB_MIN_VERSION \
                  gio-2.0 >= $GLIB_MIN_VERSION \
                  gio-unix-2.0 >= $GLIB_MIN_VERSION \
+                 gmodule-2.0 \
                  gtk+-3.0 >= $GTK_MIN_VERSION \
                  gdk-x11-3.0 >= $GTK_MIN_VERSION \
                  gdk-pixbuf-2.0 >= $GDK_PIXBUF_MIN_VERSION \
                  cairo >= $CAIRO_MIN_VERSION \
+                 gee-0.8 \
                  libbamf3 >= $BAMF_MIN_VERSION \
                  libwnck-3.0 \
                  x11"
 PLANK_CORE_OPTIONAL_PKGS=""
 
 PLANK_CORE_VALA_PKGS="--pkg gio-unix-2.0 \
+                      --pkg gmodule-2.0 \
                       --pkg gtk+-3.0 \
                       --pkg gdk-x11-3.0 \
                       --pkg gdk-pixbuf-2.0 \
                       --pkg cairo \
+                      --pkg gee-0.8 \
                       --pkg libbamf3 \
                       --pkg libwnck-3.0 \
                       --pkg posix \
                       --pkg x11"
 
 VALAFLAGS_CORE="--thread"
+
+# Docklets
+DOCKLET_LDFLAGS="-module -avoid-version"
+AC_SUBST([DOCKLET_LDFLAGS])
 
 # -----------------------------------------------------------
 # GLib Resources
@@ -160,40 +170,19 @@ fi
 #   target-glib flag accoringly
 # -----------------------------------------------------------
 
-VALAFLAGS="--target-glib=2.32"
-
-PKG_CHECK_MODULES(GLIB_2_34,
-	[gobject-2.0 >= 2.34 glib-2.0 >= 2.34 gio-2.0 >= 2.34],	[VALAFLAGS="--target-glib=2.34"], []
-)
-
+VALAFLAGS="--target-glib=2.40"
 
 # -----------------------------------------------------------
 # Optional Dependencies
 # -----------------------------------------------------------
 
-# Check for HiDPI support of Gtk+ and Cairo
-HIDPI_PKGS="gtk+-3.0 >= 3.10.0 cairo >= 1.13"
+# Check for HiDPI support of Cairo
+HIDPI_PKGS="cairo >= 1.13"
 PKG_CHECK_MODULES(HIDPI, $HIDPI_PKGS, [enable_hidpi=yes], [enable_hidpi=no])
 if test "x$enable_hidpi" = "xyes" ; then
     VALAFLAGS="$VALAFLAGS --define HAVE_HIDPI"
 fi
 AM_CONDITIONAL([HAVE_HIDPI], [test "x$enable_hidpi" = "xyes"])
-
-# Check for FrameClock support of Gtk+
-GTK_PKGS="gtk+-3.0 >= 3.8"
-PKG_CHECK_MODULES(FRAMECLOCK, $GTK_PKGS, [enable_gtk38=yes], [enable_gtk38=no])
-if test "x$enable_gtk38" = "xyes" ; then
-    VALAFLAGS="$VALAFLAGS --define HAVE_GTK_3_8"
-fi
-AM_CONDITIONAL([HAVE_GTK_3_8], [test "x$enable_gtk38" = "xyes"])
-
-# Check for CSD support of Gtk+
-GTK_PKGS="gtk+-3.0 >= 3.10.0"
-PKG_CHECK_MODULES(GTK, $GTK_PKGS, [enable_gtk310=yes], [enable_gtk310=no])
-if test "x$enable_gtk310" = "xyes" ; then
-    VALAFLAGS="$VALAFLAGS --define HAVE_GTK_3_10"
-fi
-AM_CONDITIONAL([HAVE_GTK_3_10], [test "x$enable_gtk310" = "xyes"])
 
 # Check for newer BAMF
 BAMF_PKGS="libbamf3 >= 0.4.0"
@@ -202,25 +191,6 @@ if test "x$enable_bamf_0_4" = "xyes" ; then
     VALAFLAGS="$VALAFLAGS --define HAVE_BAMF_0_4"
 fi
 AM_CONDITIONAL([HAVE_BAMF_0_4], [test "x$enable_bamf_0_4" = "xyes"])
-
-# Check for gee-0.8 and prefer to use it, no automatic fallback to gee-1.0 (0.6)
-AC_ARG_ENABLE([gee-0.8],
-              AS_HELP_STRING([--enable-gee-0.8],
-                             [Enable use of gee-0.8 instead of gee-1.0]),
-              [enable_gee_0_8=$enableval],
-              [enable_gee_0_8=yes])
-if test "x$enable_gee_0_8" = "xyes" ; then
-    GEE_DEPEND=gee-0.8
-    PLANK_CORE_PKGS="$PLANK_CORE_PKGS gee-0.8"
-    PLANK_CORE_VALA_PKGS="$PLANK_CORE_VALA_PKGS --pkg gee-0.8"
-    VALAFLAGS="$VALAFLAGS --define HAVE_GEE_0_8"
-else
-    GEE_DEPEND=gee-1.0
-    PLANK_CORE_PKGS="$PLANK_CORE_PKGS gee-1.0"
-    PLANK_CORE_VALA_PKGS="$PLANK_CORE_VALA_PKGS --pkg gee-1.0"
-fi
-AM_CONDITIONAL([HAVE_GEE_0_8], [test "x$enable_gee_0_8" = "xyes"])
-AC_SUBST(GEE_DEPEND)
 
 # Support barrier-supported unhiding using Xinput 2.3
 XFIXES_MIN_VERSION=5.0
@@ -384,14 +354,19 @@ IT_PROG_INTLTOOL([0.35.0])
 AC_CONFIG_FILES([
 Makefile
 data/Makefile
+data/net.launchpad.plank.gschema.xml.in
 data/apport/Makefile
 data/icons/Makefile
 data/themes/Makefile
 lib/Makefile
-lib/plank.deps
 lib/plank.pc
 lib/Version.vala
 src/Makefile
+docklets/Makefile
+docklets/Clippy/Makefile
+docklets/Clock/Makefile
+docklets/Desktop/Makefile
+docklets/Trash/Makefile
 docs/Makefile
 po/Makefile.in
 tests/Makefile
@@ -409,7 +384,6 @@ ${PACKAGE} ${VERSION}
     Vala Flags..................:  ${VALAFLAGS}
     C Compiler Flags............:  ${CFLAGS}
 
-    Use gee-0.8.................:  ${enable_gee_0_8}
     Dbusmenu support............:  ${enable_dbusmenu}
     HiDPI support...............:  ${enable_hidpi}
     XInput Barriers support.....:  ${enable_barriers}

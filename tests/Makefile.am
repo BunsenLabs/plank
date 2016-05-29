@@ -44,9 +44,10 @@ tests_VALASOURCES = \
 	$(NULL)
 
 nodist_tests_SOURCES = \
-	tests_vala.stamp \
 	$(tests_VALASOURCES:.vala=.c) \
 	$(NULL)
+
+$(tests_VALASOURCES:.vala=.c): tests_vala.stamp
 
 tests_vala.stamp: $(tests_VALASOURCES) $(top_builddir)/lib/plank.vapi $(top_builddir)/lib/plank-internal.vapi Makefile
 	$(AM_V_VALA)$(VALAC) \
@@ -63,9 +64,10 @@ dock_VALASOURCES = \
 	$(NULL)
 
 nodist_dock_SOURCES = \
-	dock_vala.stamp \
 	$(dock_VALASOURCES:.vala=.c) \
 	$(NULL)
+
+$(dock_VALASOURCES:.vala=.c): dock_vala.stamp
 
 dock_vala.stamp: $(dock_VALASOURCES) $(top_builddir)/lib/plank.vapi $(top_builddir)/lib/plank-internal.vapi Makefile
 	$(AM_V_VALA)$(VALAC) \
@@ -74,6 +76,8 @@ dock_vala.stamp: $(dock_VALASOURCES) $(top_builddir)/lib/plank.vapi $(top_buildd
 	$(AM_V_at)touch $@
 
 CLEANFILES = \
+	dock_vala.stamp \
+	tests_vala.stamp \
 	$(nodist_dock_SOURCES) \
 	$(nodist_tests_SOURCES) \
 	$(NULL)
@@ -86,7 +90,7 @@ EXTRA_DIST = \
 	data \
 	$(NULL)
 
-TESTS_ENVIRONMENT = HOME=$(abs_builddir)/home
+TESTS_ENVIRONMENT = HOME=$(abs_builddir)/home GSETTINGS_SCHEMA_DIR=$(abs_top_builddir)/data PLANK_DOCKLET_DIRS=$(abs_top_builddir)/docklets
 
 if HAVE_HEADLESS_TESTS
 TESTS_ENVIRONMENT += $(XVFB_RUN) --auto-servernum --server-args="-screen 0 1280x1024x24" $(DBUS_LAUNCH)
@@ -94,7 +98,7 @@ endif
 
 check-local: clean-local
 	$(TESTS_ENVIRONMENT) gtester --verbose --keep-going -o=$(builddir)/test-report.xml $(builddir)/tests
-	$(TESTS_ENVIRONMENT) $(builddir)/dock
+	$(TESTS_ENVIRONMENT) $(builddir)/dock -n test1
 
 clean-local:
 	rm -rf $(abs_builddir)/home $(builddir)/test-report.xml

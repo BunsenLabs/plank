@@ -17,7 +17,7 @@
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-namespace Plank.Drawing
+namespace Plank
 {
 	/**
 	 * Represents a RGBA color and has methods for manipulating the color.
@@ -369,10 +369,10 @@ namespace Plank.Drawing
 				return {};
 			}
 			
-			return { double.min (uint8.MAX, double.max (0, int.parse (parts [0]))) / uint8.MAX,
-				double.min (uint8.MAX, double.max (0, int.parse (parts [1]))) / uint8.MAX,
-				double.min (uint8.MAX, double.max (0, int.parse (parts [2]))) / uint8.MAX,
-				double.min (uint8.MAX, double.max (0, int.parse (parts [3]))) / uint8.MAX };
+			return { fclamp (int.parse (parts [0]), 0.0, uint8.MAX) / uint8.MAX,
+				fclamp (int.parse (parts [1]), 0.0, uint8.MAX) / uint8.MAX,
+				fclamp (int.parse (parts [2]), 0.0, uint8.MAX) / uint8.MAX,
+				fclamp (int.parse (parts [3]), 0.0, uint8.MAX) / uint8.MAX };
 		}
 	}
 }

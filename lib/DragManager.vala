@@ -17,10 +17,6 @@
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-using Plank.Drawing;
-using Plank.Items;
-using Plank.Widgets;
-
 namespace Plank
 {
 	/**
@@ -34,7 +30,7 @@ namespace Plank
 
 		public DockItem? DragItem { get; private set; default = null; }
 		
-		public bool DragIsDesktopFile { get; private set; default = false; }
+		public bool DragNeedsCheck { get; private set; default = true; }
 		
 		bool external_drag_active = false;
 		public bool ExternalDragActive {
@@ -48,7 +44,7 @@ namespace Plank
 					drag_known = false;
 					drag_data = null;
 					drag_data_requested = false;
-					DragIsDesktopFile = false;
+					DragNeedsCheck = true;
 				}
 			}
 		}
@@ -184,7 +180,7 @@ namespace Plank
 #if HAVE_HIDPI
 			drag_icon_size *= window_scale_factor;
 #endif
-			var drag_surface = new DockSurface (drag_icon_size, drag_icon_size);
+			var drag_surface = new Surface (drag_icon_size, drag_icon_size);
 #if HAVE_HIDPI
 			cairo_surface_set_device_scale (drag_surface.Internal, window_scale_factor, window_scale_factor);
 #endif
@@ -217,7 +213,6 @@ namespace Plank
 			controller.prefs.delay ();
 			
 			InternalDragActive = true;
-			context.get_device ().grab (window.get_window (), Gdk.GrabOwnership.APPLICATION, true, Gdk.EventMask.ALL_EVENTS_MASK, null, Gtk.get_current_event_time ());
 			drag_canceled = false;
 			
 			if (proxy_window != null) {
@@ -230,20 +225,40 @@ namespace Plank
 			if (RepositionMode)
 				DragItem = null;
 			
+			if (DragItem == null) {
+				Gdk.drag_abort (context, Gtk.get_current_event_time ());
+				return;
+			}
+			
 			set_drag_icon (context, DragItem, 0.8);
 			drag_item_redraw_handler_id = DragItem.needs_redraw.connect (() => {
 				set_drag_icon (context, DragItem, 0.8);
 			});
+			
+			context.get_device ().grab (window.get_window (), Gdk.GrabOwnership.APPLICATION, true,
+				Gdk.EventMask.ALL_EVENTS_MASK, null, Gtk.get_current_event_time ());
 		}
 
 		[CCode (instance_pos = -1)]
 		void drag_data_received (Gtk.Widget w, Gdk.DragContext context, int x, int y, Gtk.SelectionData selection_data, uint info, uint time_)
 		{
 			if (drag_data_requested) {
-				var uris = Uri.list_extract_uris ((string) selection_data.get_data ());
+				unowned string? data = (string?) selection_data.get_data ();
+				if (data == null) {
+					drag_data_requested = false;
+					Gdk.drag_status (context, Gdk.DragAction.COPY, time_);
+					return;
+				}
+				
+				var uris = Uri.list_extract_uris (data);
 				
 				drag_data = new Gee.ArrayList<string> ();
 				foreach (unowned string s in uris) {
+					if (s.has_prefix (DOCKLET_URI_PREFIX)) {
+						drag_data.add (s);
+						continue;
+					}
+					
 					var uri = File.new_for_uri (s).get_uri ();
 					if (uri != null)
 						drag_data.add (uri);
@@ -251,10 +266,12 @@ namespace Plank
 				
 				drag_data_requested = false;
 				
-				if (drag_data.size == 1)
-					DragIsDesktopFile = drag_data[0].has_suffix (".desktop");
-				else
-					DragIsDesktopFile = false;
+				if (drag_data.size == 1) {
+					var uri = drag_data[0];
+					DragNeedsCheck = !(uri.has_prefix (DOCKLET_URI_PREFIX) || uri.has_suffix (".desktop"));
+				} else {
+					DragNeedsCheck = true;
+				}
 				
 				// Force initial redraw for ExternalDrag to pick up new
 				// drag_data for can_accept_drop check
@@ -285,7 +302,7 @@ namespace Plank
 			unowned DockItem? item = window.HoveredItem;
 			unowned DockItemProvider? provider = window.HoveredItemProvider;
 			
-			if (!DragIsDesktopFile && item != null && item.can_accept_drop (drag_data))
+			if (DragNeedsCheck && item != null && item.can_accept_drop (drag_data))
 				item.accept_drop (drag_data);
 			else if (!controller.prefs.LockItems && provider != null && provider.can_accept_drop (drag_data))
 				provider.accept_drop (drag_data);
@@ -349,6 +366,8 @@ namespace Plank
 			// Perform persistent write of dock-preference
 			controller.prefs.apply ();
 			
+			controller.hover.hide ();
+			
 			// Force last redraw for InternalDrag
 			controller.renderer.animated_draw ();
 			
@@ -375,6 +394,8 @@ namespace Plank
 				// Delay it to preserve functionality in drag_drop.
 				Gdk.threads_add_idle (() => {
 					ExternalDragActive = false;
+					
+					controller.hover.hide ();
 					
 					// If an item was hovered we need it in drag_drop,
 					// so reset HoveredItem here not earlier.
@@ -439,6 +460,25 @@ namespace Plank
 				}
 			} else {
 				Gdk.drag_status (context, Gdk.DragAction.COPY, time_);
+			}
+			
+			if (ExternalDragActive) {
+				unowned PositionManager position_manager = controller.position_manager;
+				unowned DockItem hovered_item = window.HoveredItem;
+				unowned HoverWindow hover = controller.hover;
+				if (DragNeedsCheck && hovered_item != null && hovered_item.can_accept_drop (drag_data)) {
+					int hx, hy;
+					position_manager.get_hover_position (hovered_item, out hx, out hy);
+					hover.set_text (hovered_item.get_drop_text ());
+					hover.show_at (hx, hy, position_manager.Position);
+				} else if (hide_manager.Hovered && !controller.prefs.LockItems) {
+					int hx = x, hy = y;
+					position_manager.get_hover_position_at (ref hx, ref hy);
+					hover.set_text (_("Drop to add to dock"));
+					hover.show_at (hx, hy, position_manager.Position);
+				} else {
+					hover.hide ();
+				}
 			}
 			
 			controller.renderer.update_local_cursor (x, y);

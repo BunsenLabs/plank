@@ -6,6 +6,7 @@ ACLOCAL_AMFLAGS = --install -I m4 ${ACLOCAL_FLAGS}
 SUBDIRS = \
 	data \
 	lib \
+	docklets \
 	po \
 	vapi \
 	src \
@@ -26,6 +27,7 @@ DISTCHECK_CONFIGURE_FLAGS = \
 	$(NULL)
 
 EXTRA_DIST = \
+	autogen.sh \
 	COPYING.LGPL2.1 \
 	COPYRIGHT \
 	HACKING \
@@ -47,6 +49,14 @@ distclean-local:
 	if test "x$(srcdir)" = "x."; then :; else \
 		rm -f ChangeLog; \
 	fi
+
+run: all
+	GSETTINGS_SCHEMA_DIR=$(abs_top_builddir)/data PLANK_DOCKLET_DIRS=$(abs_top_builddir)/docklets \
+		$(top_builddir)/src/plank -v
+
+run-debug: all
+	GSETTINGS_SCHEMA_DIR=$(abs_top_builddir)/data PLANK_DOCKLET_DIRS=$(abs_top_builddir)/docklets \
+		libtool --mode=execute gdb --args $(top_builddir)/src/plank -v
 
 ChangeLog:
 	@echo Creating $@

@@ -7,17 +7,21 @@ msgid ""
 msgstr ""
 "Project-Id-Version: plank\n"
 "Report-Msgid-Bugs-To: FULL NAME <EMAIL@ADDRESS>\n"
-"POT-Creation-Date: 2015-10-08 19:57+0000\n"
-"PO-Revision-Date: 2015-09-15 13:57+0000\n"
-"Last-Translator: Papp Ferenc <Unknown>\n"
+"POT-Creation-Date: 2016-02-21 09:20+0000\n"
+"PO-Revision-Date: 2016-02-17 00:36+0000\n"
+"Last-Translator: Rico Tzschichholz <Unknown>\n"
 "Language-Team: Hungarian <hu@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Launchpad-Export-Date: 2015-10-09 05:23+0000\n"
-"X-Generator: Launchpad (build 17802)\n"
+"X-Launchpad-Export-Date: 2016-02-22 05:40+0000\n"
+"X-Generator: Launchpad (build 17925)\n"
 
-#: ../data/plank.appdata.xml.in.h:1
+#: ../data/plank.appdata.xml.in.h:1 ../data/plank.desktop.in.h:1
+msgid "Stupidly simple."
+msgstr "Nagyszerűen egyszerű."
+
+#: ../data/plank.appdata.xml.in.h:2
 msgid ""
 "Plank is meant to be the simplest dock on the planet. The goal is to provide "
 "just what a dock needs and absolutely nothing more."
@@ -26,7 +30,7 @@ msgstr ""
 "a cél, hogy csak annyit nyújtson amennyit egy dokknak feltétlenül kell és "
 "semmi többet."
 
-#: ../data/plank.appdata.xml.in.h:2
+#: ../data/plank.appdata.xml.in.h:3
 msgid ""
 "It is, however, a library which can be extended to create other dock "
 "programs with more advanced features. Thus, Plank is the underlying "
@@ -39,10 +43,6 @@ msgstr ""
 "technológia (a 3.0.0 verziótól kezdve) és az alapfunkciók biztosítását "
 "célozza, míg a Docky ezt kibővítve látványosabb dolgokat ad hozzá, mint "
 "például Dockleteket, festőket (painters), beállítóablakot, stb."
-
-#: ../data/plank.desktop.in.h:1
-msgid "Plank. Stupidly simple."
-msgstr "Plank. Nagyszerűen egyszerű."
 
 #: ../data/ui/preferences.ui.h:1
 msgid "Theme:"
@@ -108,7 +108,7 @@ msgstr "Ikon méret:"
 msgid "Icon Zoom:"
 msgstr "Ikon nagyítása:"
 
-#: ../data/ui/preferences.ui.h:17 ../lib/Widgets/PreferencesWindow.vala:95
+#: ../data/ui/preferences.ui.h:17
 msgid "Appearance"
 msgstr "Megjelenés"
 
@@ -181,32 +181,55 @@ msgstr "Automatikus rögzítés:"
 msgid "Show Item for Dock:"
 msgstr "Dokk ikon megjelenítése:"
 
-#: ../data/ui/preferences.ui.h:35 ../lib/Widgets/PreferencesWindow.vala:96
+#: ../data/ui/preferences.ui.h:35
 msgid "Behaviour"
 msgstr "Viselkedés"
 
-#: ../lib/Items/ApplicationDockItem.vala:454
-#: ../lib/Items/FileDockItem.vala:330 ../lib/Items/FileDockItem.vala:348
+#: ../data/ui/preferences.ui.h:36
+msgid "Docklets"
+msgstr "Dockletek"
+
+#: ../lib/DragManager.vala:477 ../lib/Items/PlaceholderDockItem.vala:51
+msgid "Drop to add to dock"
+msgstr "Ragadja meg a dokkon való elhelyezéshez"
+
+#: ../lib/Factories/AbstractMain.vala:365 ../src/Main.vala:75
+msgid "translator-credits"
+msgstr ""
+"Launchpad Contributions:\n"
+"  András Bognár https://launchpad.net/~bognarandras-deactivatedaccount\n"
+"  Dienes Tamás https://launchpad.net/~mith88\n"
+"  Papp Ferenc https://launchpad.net/~pappfer\n"
+"  Rico Tzschichholz https://launchpad.net/~ricotz\n"
+"  Robert Kuszinger https://launchpad.net/~kuszinger"
+
+#: ../lib/Items/ApplicationDockItem.vala:446
+#: ../lib/Items/FileDockItem.vala:314 ../lib/Items/FileDockItem.vala:336
 msgid "_Keep in Dock"
 msgstr "_Zárolás a dokkhoz"
 
-#: ../lib/Items/ApplicationDockItem.vala:462
+#: ../lib/Items/ApplicationDockItem.vala:454
 msgid "_Close All"
 msgstr "Összes _bezárása"
 
-#: ../lib/Items/ApplicationDockItem.vala:462
+#: ../lib/Items/ApplicationDockItem.vala:454
 msgid "_Close"
 msgstr "_Bezárás"
 
-#: ../lib/Items/FileDockItem.vala:335
+#: ../lib/Items/ApplicationDockItem.vala:526
+#, c-format
+msgid "Drop to open with %s"
+msgstr "Engedje el a %s-(v)al megnyitáshoz"
+
+#: ../lib/Items/FileDockItem.vala:320
 msgid "_Open in File Browser"
 msgstr "Megnyitás a _fájlböngészőben"
 
-#: ../lib/Items/FileDockItem.vala:353
+#: ../lib/Items/FileDockItem.vala:342
 msgid "_Open"
 msgstr "Meg_nyitás"
 
-#: ../lib/Items/FileDockItem.vala:357
+#: ../lib/Items/FileDockItem.vala:346
 msgid "Open Containing _Folder"
 msgstr "_Tartalmazó mappa megnyitása"
 
@@ -214,14 +237,14 @@ msgstr "_Tartalmazó mappa megnyitása"
 msgid "Drop applications or files here"
 msgstr "Húzzon alkalmazásokat vagy fájlokat ide"
 
-#: ../lib/Items/PlankDockItem.vala:77
+#: ../lib/Items/PlankDockItem.vala:73
 msgid "Get _Help Online..."
 msgstr "Online _súgó..."
 
-#: ../lib/Items/PlankDockItem.vala:81
+#: ../lib/Items/PlankDockItem.vala:77
 msgid "_Translate This Application..."
 msgstr "Ezen alkalmazás _fordítása..."
 
-#: ../lib/Widgets/PreferencesWindow.vala:70
+#: ../lib/Widgets/PreferencesWindow.vala:94
 msgid "Preferences"
 msgstr "Beállítások"

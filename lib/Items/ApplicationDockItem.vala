@@ -17,11 +17,7 @@
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-using Plank.Drawing;
-using Plank.Services;
-using Plank.Services.Windows;
-
-namespace Plank.Items
+namespace Plank
 {
 	/**
 	 * A dock item for applications (with .desktop launchers).
@@ -132,11 +128,7 @@ namespace Plank.Items
 		{
 			supported_mime_types = new Gee.ArrayList<string> ();
 			actions = new Gee.ArrayList<string> ();
-#if HAVE_GEE_0_8
 			actions_map = new Gee.HashMap<string, string> ();
-#else
-			actions_map = new Gee.HashMap<string, string> (str_hash, str_equal);
-#endif
 			
 			load_from_launcher ();
 		}
@@ -160,8 +152,8 @@ namespace Plank.Items
 			app.running_changed.connect_after (handle_running_changed);
 			app.urgent_changed.connect_after (handle_urgent_changed);
 			app.user_visible_changed.connect_after (handle_user_visible_changed);
-			app.window_added.connect_after (handle_window_added);
-			app.window_removed.connect_after (handle_window_removed);
+			app.child_added.connect_after (handle_window_added);
+			app.child_removed.connect_after (handle_window_removed);
 			app.closed.connect_after (handle_closed);
 		}
 		
@@ -172,8 +164,8 @@ namespace Plank.Items
 			app.running_changed.disconnect (handle_running_changed);
 			app.urgent_changed.disconnect (handle_urgent_changed);
 			app.user_visible_changed.disconnect (handle_user_visible_changed);
-			app.window_added.disconnect (handle_window_added);
-			app.window_removed.disconnect (handle_window_removed);
+			app.child_added.disconnect (handle_window_added);
+			app.child_removed.disconnect (handle_window_removed);
 			app.closed.disconnect (handle_closed);
 		}
 		
@@ -242,12 +234,14 @@ namespace Plank.Items
 		
 		void handle_running_changed (bool is_running)
 		{
-			if (is_running) {
-				app_window_added ();
+			if (!is_running) {
+				reset_application_status ();
 				return;
 			}
 			
-			reset_application_status ();
+			update_indicator ();
+			
+			app_window_added ();
 		}
 		
 		public void set_urgent (bool is_urgent)
@@ -269,6 +263,9 @@ namespace Plank.Items
 		
 		void handle_window_added (Bamf.View? child)
 		{
+			if (!(child is Bamf.Window))
+				return;
+			
 			update_indicator ();
 			
 			app_window_added ();
@@ -276,6 +273,9 @@ namespace Plank.Items
 		
 		void handle_window_removed (Bamf.View? child)
 		{
+			if (!(child is Bamf.Window))
+				return;
+			
 			update_indicator ();
 			
 			app_window_removed ();
@@ -316,40 +316,40 @@ namespace Plank.Items
 		
 		void launch ()
 		{
-			Services.System.launch (File.new_for_uri (Prefs.Launcher));
+			System.get_default ().launch (File.new_for_uri (Prefs.Launcher));
 		}
 		
 		/**
 		 * {@inheritDoc}
 		 */
-		protected override Animation on_clicked (PopupButton button, Gdk.ModifierType mod, uint32 event_time)
+		protected override AnimationType on_clicked (PopupButton button, Gdk.ModifierType mod, uint32 event_time)
 		{
 			if (!is_window ())
 				if (button == PopupButton.MIDDLE
 					|| (button == PopupButton.LEFT && (App == null || WindowControl.get_num_windows (App) == 0
 					|| (mod & Gdk.ModifierType.CONTROL_MASK) == Gdk.ModifierType.CONTROL_MASK))) {
 					launch ();
-					return Animation.BOUNCE;
+					return AnimationType.BOUNCE;
 				}
 			
 			if (button == PopupButton.LEFT && App != null && WindowControl.get_num_windows (App) > 0) {
 				WindowControl.smart_focus (App, event_time);
-				return Animation.DARKEN;
+				return AnimationType.DARKEN;
 			}
 			
-			return Animation.NONE;
+			return AnimationType.NONE;
 		}
 		
 		/**
 		 * {@inheritDoc}
 		 */
-		protected override Animation on_scrolled (Gdk.ScrollDirection direction, Gdk.ModifierType mod, uint32 event_time)
+		protected override AnimationType on_scrolled (Gdk.ScrollDirection direction, Gdk.ModifierType mod, uint32 event_time)
 		{
 			if (App == null || WindowControl.get_num_windows (App) == 0)
-				return Animation.NONE;
+				return AnimationType.NONE;
 			
-			if (GLib.get_monotonic_time () - LastScrolled < 300 * 1000)
-				return Animation.DARKEN;
+			if (GLib.get_monotonic_time () - LastScrolled < ITEM_SCROLL_DURATION * 1000)
+				return AnimationType.DARKEN;
 			
 			LastScrolled = GLib.get_monotonic_time ();
 			
@@ -358,44 +358,7 @@ namespace Plank.Items
 			else
 				WindowControl.focus_next (App, event_time);
 			
-			return Animation.DARKEN;
-		}
-		
-		static void combine_strings (ref string[] result, string delimiter, int n, int i)
-		{
-			if (i <= 1)
-				return;
-			
-			int pos = n;
-			for (int j = 0; j < i - 1; j++) {
-				pos += (i - j);
-				result[n + j + 1] = "%s%s%s".printf (result[n + j], delimiter, result[pos]);
-			}
-			
-			combine_strings (ref result, delimiter, n + i, i - 1);
-		}
-		
-		/**
-		 * Generates an array containing all combinations of a splitted string parts
-		 * while preserving the given order of them.
-		 */
-		static string[] split_combine_string (string s, string delimiter = " ")
-		{
-			var parts = s.split (delimiter);
-			var count = parts.length;
-			var result = new string[count * (count + 1) / 2];
-			
-			// Initialize array with the elementary parts
-			int pos = 0;
-			for (int i = 0; i < count; i++) {
-				result[pos] = parts[i];
-				pos += (count - i);
-			}
-			
-			// Recursively filling up the result array
-			combine_strings (ref result, delimiter, 0, count);
-			
-			return result;
+			return AnimationType.DARKEN;
 		}
 		
 		string shorten_window_name (string window_name)
@@ -405,7 +368,7 @@ namespace Plank.Items
 			
 			string[] app_strings = null;
 			foreach (unowned string d in APP_NAME_DELIMITER) {
-				app_strings = split_combine_string (Text, d);
+				app_strings = string_split_combine (Text, d);
 				if (app_strings.length > 1)
 					break;
 			}
@@ -529,6 +492,14 @@ namespace Plank.Items
 		/**
 		 * {@inheritDoc}
 		 */
+		public override string get_drop_text ()
+		{
+			return _("Drop to open with %s").printf (Text);
+		}
+		
+		/**
+		 * {@inheritDoc}
+		 */
 		public override bool can_accept_drop (Gee.ArrayList<string> uris)
 		{
 			if (uris == null || is_window ())
@@ -561,7 +532,7 @@ namespace Plank.Items
 			foreach (var uri in uris)
 				files.add (File.new_for_uri (uri));
 			
-			Services.System.launch_with_files (File.new_for_uri (Prefs.Launcher), files.to_array ());
+			System.get_default ().launch_with_files (File.new_for_uri (Prefs.Launcher), files.to_array ());
 			
 			return true;
 		}
@@ -790,18 +761,26 @@ namespace Plank.Items
 			Variant prop_value;
 			
 			while (prop_iter.next ("{sv}", out prop_key, out prop_value)) {
-				if (prop_key == "count")
-					Count = prop_value.get_int64 ();
-				else if (prop_key == "count-visible")
-					CountVisible = prop_value.get_boolean ();
-				else if (prop_key == "progress")
-					Progress = prop_value.get_double ();
-				else if (prop_key == "progress-visible")
-					ProgressVisible = prop_value.get_boolean ();
-				else if (prop_key == "urgent")
+				if (prop_key == "count") {
+					var val = prop_value.get_int64 ();
+					if (Count != val)
+						Count = val;
+				} else if (prop_key == "count-visible") {
+					var val = prop_value.get_boolean ();
+					if (CountVisible != val)
+						CountVisible = val;
+				} else if (prop_key == "progress") {
+					var val = nround (prop_value.get_double (), 3U);
+					if (Progress != val)
+						Progress = val;
+				} else if (prop_key == "progress-visible") {
+					var val = prop_value.get_boolean ();
+					if (ProgressVisible != val)
+						ProgressVisible = val;
+				} else if (prop_key == "urgent") {
 					set_urgent (prop_value.get_boolean ());
 #if HAVE_DBUSMENU
-				else if (prop_key == "quicklist") {
+				} else if (prop_key == "quicklist") {
 					/* The value is the object path of the dbusmenu */
 					unowned string dbus_path = prop_value.get_string ();
 					// Make sure we don't update our Quicklist instance if isn't necessary
@@ -812,8 +791,8 @@ namespace Plank.Items
 						} else {
 							Quicklist = null;
 						}
-				}
 #endif
+				}
 			}
 		}
 		

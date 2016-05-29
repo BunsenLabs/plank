@@ -17,8 +17,6 @@
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-using Plank.Factories;
-
 namespace Plank
 {
 	public static int main (string[] argv)
@@ -62,7 +60,7 @@ namespace Plank
 				program_name : "Plank",
 				exec_name : "plank",
 			
-				app_copyright : "2011-2015",
+				app_copyright : "2011-2016",
 				app_dbus : "net.launchpad.plank",
 				app_icon : "plank",
 				app_launcher : "plank.desktop",
@@ -74,7 +72,7 @@ namespace Plank
 				about_authors : authors,
 				about_documenters : documenters,
 				about_artists : artists,
-				about_translators : "",
+				about_translators : _("translator-credits"),
 				about_license_type : Gtk.License.GPL_3_0
 			);
 		}

@@ -17,7 +17,7 @@
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-namespace Plank.Widgets
+namespace Plank
 {
 	/**
 	 * A hover window that shows labels for dock items.
@@ -26,6 +26,12 @@ namespace Plank.Widgets
 	public class HoverWindow : Gtk.Window
 	{
 		const int PADDING = 10;
+		
+		static construct
+		{
+			set_accessible_role (Atk.Role.TOOL_TIP);
+			PlankCompat.gtk_widget_class_set_css_name ((GLib.ObjectClass) typeof (HoverWindow).class_ref (), "tooltip");
+		}
 		
 		Gtk.Box box;
 		Gtk.Label label;
@@ -99,8 +105,8 @@ namespace Plank.Widgets
 				break;
 			}
 			
-			x = int.max (monitor.x, int.min (x, monitor.x + monitor.width - width));
-			y = int.max (monitor.y, int.min (y, monitor.y + monitor.height - height));
+			x = x.clamp (monitor.x, monitor.x + monitor.width - width);
+			y = y.clamp (monitor.y, monitor.y + monitor.height - height);
 			
 			move (x, y);
 		}

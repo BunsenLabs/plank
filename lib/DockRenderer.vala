@@ -17,17 +17,12 @@
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-using Plank.Items;
-using Plank.Drawing;
-using Plank.Services;
-using Plank.Widgets;
-
 namespace Plank
 {
 	/**
 	 * Handles all of the drawing for a dock.
 	 */
-	public class DockRenderer : AnimatedRenderer
+	public class DockRenderer : Renderer
 	{
 		public DockController controller { private get; construct; }
 		
@@ -57,21 +52,22 @@ namespace Plank
 		[CCode (notify = false)]
 		public Gdk.Point local_cursor { get; private set; }
 
-		DockSurface? main_buffer = null;
-		DockSurface? fade_buffer = null;
-		DockSurface? item_buffer = null;
-		DockSurface? shadow_buffer = null;
+		Surface? main_buffer = null;
+		Surface? fade_buffer = null;
+		Surface? item_buffer = null;
+		Surface? shadow_buffer = null;
 		
-		DockSurface? background_buffer = null;
+		Surface? background_buffer = null;
 		Gdk.Rectangle background_rect;
-		DockSurface? indicator_buffer = null;
-		DockSurface? urgent_indicator_buffer = null;
-		DockSurface? urgent_glow_buffer = null;
+		Surface? indicator_buffer = null;
+		Surface? urgent_indicator_buffer = null;
+		Surface? urgent_glow_buffer = null;
 		
 		int64 last_hide = 0LL;
 		int64 last_hovered_changed = 0LL;
 		
 		bool screen_is_composited = false;
+		bool show_notifications = true;
 		uint reset_position_manager_timer_id = 0U;
 		int window_scale_factor = 1;
 		bool is_first_frame = true;
@@ -184,7 +180,7 @@ namespace Plank
 				theme.notify.disconnect (theme_changed);
 			
 			unowned string name = controller.prefs.Theme;
-			if (name == Drawing.Theme.GTK_THEME_NAME) {
+			if (name == Theme.GTK_THEME_NAME) {
 				if (gtk_theme_name_changed_handler_id == 0UL)
 					gtk_theme_name_changed_handler_id = Gtk.Settings.get_default ().notify["gtk-theme-name"].connect (load_theme);
 			} else if (gtk_theme_name_changed_handler_id > 0UL) {
@@ -250,6 +246,7 @@ namespace Plank
 			unowned PositionManager position_manager = controller.position_manager;
 			
 			screen_is_composited = position_manager.screen_is_composited;
+			show_notifications = EnvironmentSettings.get_instance ().ShowNotifications;
 			dynamic_animation_offset = 0.0;
 			
 			var fade_opacity = theme.FadeOpacity;
@@ -259,24 +256,25 @@ namespace Plank
 				var hide_time = int64.max (0LL, frame_time - last_hide);
 				if (hide_time < hide_duration) {
 					if (controller.hide_manager.Hidden)
-						hide_progress = Drawing.easing_for_mode (AnimationMode.EASE_IN_CUBIC, hide_time, hide_duration);
+						hide_progress = easing_for_mode (AnimationMode.EASE_IN_CUBIC, hide_time, hide_duration);
 					else
-						hide_progress = 1.0 - Drawing.easing_for_mode (AnimationMode.EASE_OUT_CUBIC, hide_time, hide_duration);
+						hide_progress = 1.0 - easing_for_mode (AnimationMode.EASE_OUT_CUBIC, hide_time, hide_duration);
 				} else {
 					hide_progress = (controller.hide_manager.Hidden ? 1.0 : 0.0);
 				}
 				
-				var zoom_duration = 150 * 1000;
+				var zoom_duration = DOCK_ZOOM_DURATION * 1000;
 				var zoom_time = int64.max (0LL, frame_time - last_hovered_changed);
 				double zoom_progress;
-				if (zoom_time < zoom_duration)
-					zoom_progress = Drawing.easing_for_mode (AnimationMode.LINEAR, zoom_time, zoom_duration);
-				else
-					zoom_progress = 1.0;
-				if (!controller.hide_manager.Hovered)
-					zoom_progress = 1.0 - zoom_progress;
-				zoom_progress *= 1.0 - hide_progress;
-				zoom_in_progress = zoom_progress;
+				if (zoom_time < zoom_duration) {
+					if (controller.hide_manager.Hovered)
+						zoom_progress = easing_for_mode (AnimationMode.EASE_OUT_CUBIC, zoom_time, zoom_duration);
+					else
+						zoom_progress = 1.0 - easing_for_mode (AnimationMode.EASE_IN_CUBIC, zoom_time, zoom_duration);
+				} else {
+					zoom_progress = (controller.hide_manager.Hovered ? 1.0 : 0.0);
+				}
+				zoom_in_progress = zoom_progress * (1.0 - hide_progress);
 			} else {
 				hide_progress = 0.0;
 				zoom_in_progress = 0.0;
@@ -325,16 +323,12 @@ namespace Plank
 				transient_items.clear ();
 			}
 			
-#if HAVE_GEE_0_8
 			current_items.sort ((CompareDataFunc) compare_dock_item_position);
-#else
-			current_items.sort ((CompareFunc) compare_dock_item_position);
-#endif
 			
 			// Calculate positions for given ordered list of items
 			position_manager.update_draw_values (current_items,
-				(PositionManager.DockItemDrawValueFunc) animate_draw_value_for_item,
-				(PositionManager.DrawValuesFunc) post_process_draw_values);
+				(DrawValueFunc) animate_draw_value_for_item,
+				(DrawValuesFunc) post_process_draw_values);
 			
 			background_rect = position_manager.get_background_region ();
 		}
@@ -362,21 +356,21 @@ namespace Plank
 			var win_rect = position_manager.get_dock_window_region ();
 			
 			if (main_buffer == null) {
-				main_buffer = new DockSurface.with_surface (win_rect.width, win_rect.height, cr.get_target ());
+				main_buffer = new Surface.with_cairo_surface (win_rect.width, win_rect.height, cr.get_target ());
 #if HAVE_HIDPI
 				cairo_surface_set_device_scale (main_buffer.Internal, window_scale_factor, window_scale_factor);
 #endif
 			}
 			
 			if (item_buffer == null) {
-				item_buffer = new DockSurface.with_surface (win_rect.width, win_rect.height, cr.get_target ());
+				item_buffer = new Surface.with_cairo_surface (win_rect.width, win_rect.height, cr.get_target ());
 #if HAVE_HIDPI
 				cairo_surface_set_device_scale (item_buffer.Internal, window_scale_factor, window_scale_factor);
 #endif
 			}
 			
 			if (shadow_buffer == null) {
-				shadow_buffer = new DockSurface.with_surface (win_rect.width, win_rect.height, cr.get_target ());
+				shadow_buffer = new Surface.with_cairo_surface (win_rect.width, win_rect.height, cr.get_target ());
 #if HAVE_HIDPI
 				cairo_surface_set_device_scale (shadow_buffer.Internal, window_scale_factor, window_scale_factor);
 #endif
@@ -392,14 +386,15 @@ namespace Plank
 				cr.paint ();
 				cr.restore ();
 				
-				foreach (unowned DockItem item in current_items)
-					draw_urgent_glow (item, cr, frame_time);
+				if (show_notifications)
+					foreach (unowned DockItem item in current_items)
+						draw_urgent_glow (item, cr, frame_time);
 				
 				return;
 			}
 
 			if (opacity < 1.0 && fade_buffer == null) {
-				fade_buffer = new DockSurface.with_surface (win_rect.width, win_rect.height, cr.get_target ());
+				fade_buffer = new Surface.with_cairo_surface (win_rect.width, win_rect.height, cr.get_target ());
 #if HAVE_HIDPI
 				cairo_surface_set_device_scale (fade_buffer.Internal, window_scale_factor, window_scale_factor);
 #endif
@@ -478,7 +473,7 @@ namespace Plank
 			cr.paint ();
 			
 			// draw urgent-glow if dock is completely hidden
-			if (hide_progress == 1.0) {
+			if (show_notifications && hide_progress == 1.0) {
 				foreach (unowned DockItem item in current_items)
 					draw_urgent_glow (item, cr, frame_time);
 			}
@@ -534,12 +529,19 @@ namespace Plank
 				background_buffer = theme.create_background (background_rect.width, background_rect.height,
 					position_manager.Position, main_buffer);
 			
+			if (hide_progress > 0.0 && theme.CascadeHide) {
+				int x, y;
+				position_manager.get_background_padding (out x, out y);
+				x_offset -= (int) (x * hide_progress);
+				y_offset -= (int) (y * hide_progress);
+			}
+			
 			cr.set_source_surface (background_buffer.Internal, background_rect.x + x_offset, background_rect.y + y_offset);
 			cr.paint ();
 		}
 		
 		[CCode (instance_pos = -1)]
-		void animate_draw_value_for_item (DockItem item, PositionManager.DockItemDrawValue draw_value)
+		void animate_draw_value_for_item (DockItem item, DockItemDrawValue draw_value)
 		{
 			unowned PositionManager position_manager = controller.position_manager;
 			unowned DockItem hovered_item = controller.window.HoveredItem;
@@ -550,7 +552,7 @@ namespace Plank
 			var x_offset = 0.0, y_offset = 0.0;
 			
 			// check for and calculate click-animation
-			var max_click_time = item.ClickedAnimation == Animation.BOUNCE ? theme.LaunchBounceTime : theme.ClickTime;
+			var max_click_time = item.ClickedAnimation == AnimationType.BOUNCE ? theme.LaunchBounceTime : theme.ClickTime;
 			max_click_time *= 1000;
 			var click_time = int64.max (0LL, frame_time - item.LastClicked);
 			if (click_time < max_click_time) {
@@ -558,57 +560,56 @@ namespace Plank
 				
 				switch (item.ClickedAnimation) {
 				default:
-				case Animation.NONE:
+				case AnimationType.NONE:
 					break;
-				case Animation.BOUNCE:
-					if (!screen_is_composited)
-						break;
-					y_offset += Math.fabs (Math.sin (2 * Math.PI * click_animation_progress) * position_manager.LaunchBounceHeight * double.min (1.0, 1.3333 * (1.0 - click_animation_progress)));
+				case AnimationType.BOUNCE:
+					if (screen_is_composited)
+						y_offset += position_manager.LaunchBounceHeight * easing_bounce (click_time, max_click_time, 2);
 					break;
-				case Animation.DARKEN:
+				case AnimationType.DARKEN:
 					draw_value.darken = double.max (0, Math.sin (Math.PI * click_animation_progress)) * 0.5;
 					break;
-				case Animation.LIGHTEN:
+				case AnimationType.LIGHTEN:
 					draw_value.lighten = double.max (0, Math.sin (Math.PI * click_animation_progress)) * 0.5;
 					break;
 				}
 			}
 			
 			// check for and calculate scroll-animation
-			var max_scroll_time = 300 * 1000;
+			var max_scroll_time = ITEM_SCROLL_DURATION * 1000;
 			var scroll_time = int64.max (0LL, frame_time - item.LastScrolled);
 			if (scroll_time < max_scroll_time) {
 				var scroll_animation_progress = scroll_time / (double) max_scroll_time;
 				
 				switch (item.ScrolledAnimation) {
 				default:
-				case Animation.NONE:
+				case AnimationType.NONE:
 					break;
-				case Animation.DARKEN:
+				case AnimationType.DARKEN:
 					draw_value.darken = double.max (0, Math.sin (Math.PI * scroll_animation_progress)) * 0.5;
 					break;
-				case Animation.LIGHTEN:
+				case AnimationType.LIGHTEN:
 					draw_value.lighten = double.max (0, Math.sin (Math.PI * scroll_animation_progress)) * 0.5;
 					break;
 				}
 			}
 			
 			// check for and calculate hover-animation
-			var max_hover_time = 150 * 1000;
+			var max_hover_time = ITEM_HOVER_DURATION * 1000;
 			var hover_time = int64.max (0LL, frame_time - item.LastHovered);
 			if (hover_time < max_hover_time) {
 				var hover_animation_progress = 0.0;
 				if (hovered_item == item) {
-					hover_animation_progress = Drawing.easing_for_mode (AnimationMode.LINEAR, hover_time, max_hover_time);
+					hover_animation_progress = easing_for_mode (AnimationMode.LINEAR, hover_time, max_hover_time);
 				} else {
-					hover_animation_progress = 1.0 - Drawing.easing_for_mode (AnimationMode.LINEAR, hover_time, max_hover_time);
+					hover_animation_progress = 1.0 - easing_for_mode (AnimationMode.LINEAR, hover_time, max_hover_time);
 				}
 				
 				switch (item.HoveredAnimation) {
 				default:
-				case Animation.NONE:
+				case AnimationType.NONE:
 					break;
-				case Animation.LIGHTEN:
+				case AnimationType.LIGHTEN:
 					draw_value.lighten = hover_animation_progress * 0.2;
 					break;
 				}
@@ -619,17 +620,16 @@ namespace Plank
 			if (hovered_item == item && controller.window.menu_is_visible ())
 				draw_value.darken += 0.4;
 			else if (drag_manager.ExternalDragActive
-				&& !drag_manager.DragIsDesktopFile
+				&& drag_manager.DragNeedsCheck
 				&& !drag_manager.drop_is_accepted_by (item))
 				draw_value.darken += 0.6;
 			
 			// bounce icon on urgent state
-			if (screen_is_composited && (item.State & ItemState.URGENT) != 0) {
+			if (screen_is_composited && show_notifications && (item.State & ItemState.URGENT) != 0) {
+				var urgent_duration = theme.UrgentBounceTime * 1000;
 				var urgent_time = int64.max (0LL, frame_time - item.LastUrgent);
-				var bounce_animation_progress = urgent_time / (double) (theme.UrgentBounceTime * 1000);
-				if (bounce_animation_progress < 1.0) {
-					y_offset += Math.fabs (Math.sin (Math.PI * bounce_animation_progress) * position_manager.UrgentBounceHeight * double.min (1.0, 2.0 * (1.0 - bounce_animation_progress)));
-				}
+				if (urgent_time < urgent_duration)
+					y_offset += position_manager.UrgentBounceHeight * easing_bounce (urgent_time, urgent_duration, 1.0);
 			}
 			
 			// animate addition/removal
@@ -639,13 +639,13 @@ namespace Plank
 				var move_duration = theme.ItemMoveTime * 1000;
 				var move_time = int64.max (0LL, frame_time - item.AddTime);
 				if (move_time < move_duration) {
-					var move_animation_progress = 1.0 - Drawing.easing_for_mode (AnimationMode.LINEAR, move_time, move_duration);
-					draw_value.opacity = Drawing.easing_for_mode (AnimationMode.EASE_IN_EXPO, move_time, move_duration);
+					var move_animation_progress = 1.0 - easing_for_mode (AnimationMode.LINEAR, move_time, move_duration);
+					draw_value.opacity = easing_for_mode (AnimationMode.EASE_IN_EXPO, move_time, move_duration);
 					y_offset -= move_animation_progress * (icon_size + position_manager.BottomPadding);
 					draw_value.show_indicator = false;
 					
 					// calculate the resulting incremental dynamic-animation-offset used to animate the background-resize and icon-offset
-					move_animation_progress = 1.0 - Drawing.easing_for_mode (AnimationMode.EASE_OUT_QUINT, move_time, move_duration);
+					move_animation_progress = 1.0 - easing_for_mode (AnimationMode.EASE_OUT_QUINT, move_time, move_duration);
 					dynamic_animation_offset -= move_animation_progress * (icon_size + position_manager.ItemPadding);
 					x_offset += dynamic_animation_offset;
 				}
@@ -653,13 +653,13 @@ namespace Plank
 				var move_duration = theme.ItemMoveTime * 1000;
 				var move_time = int64.max (0LL, frame_time - item.RemoveTime);
 				if (move_time < move_duration) {
-					var move_animation_progress = Drawing.easing_for_mode (AnimationMode.LINEAR, move_time, move_duration);
-					draw_value.opacity = 1.0 - Drawing.easing_for_mode (AnimationMode.EASE_OUT_EXPO, move_time, move_duration);
+					var move_animation_progress = easing_for_mode (AnimationMode.LINEAR, move_time, move_duration);
+					draw_value.opacity = 1.0 - easing_for_mode (AnimationMode.EASE_OUT_EXPO, move_time, move_duration);
 					y_offset -= move_animation_progress * (icon_size + position_manager.BottomPadding);
 					draw_value.show_indicator = false;
 					
 					// calculate the resulting incremental dynamic-animation-offset used to animate the background-resize and icon-offset
-					move_animation_progress = 1.0 - Drawing.easing_for_mode (AnimationMode.EASE_IN_QUINT, move_time, move_duration);
+					move_animation_progress = 1.0 - easing_for_mode (AnimationMode.EASE_IN_QUINT, move_time, move_duration);
 					dynamic_animation_offset += move_animation_progress * (icon_size + position_manager.ItemPadding);
 					x_offset += dynamic_animation_offset - (icon_size + position_manager.ItemPadding);
 				}
@@ -673,11 +673,11 @@ namespace Plank
 					var move_animation_progress = 0.0;
 					if (transient_items.size > 0) {
 						if (dynamic_animation_offset > 0)
-							move_animation_progress = 1.0 - Drawing.easing_for_mode (AnimationMode.EASE_IN_QUINT, move_time, move_duration);
+							move_animation_progress = 1.0 - easing_for_mode (AnimationMode.EASE_IN_QUINT, move_time, move_duration);
 						else
-							move_animation_progress = 1.0 - Drawing.easing_for_mode (AnimationMode.EASE_OUT_QUINT, move_time, move_duration);
+							move_animation_progress = 1.0 - easing_for_mode (AnimationMode.EASE_OUT_QUINT, move_time, move_duration);
 					} else {
-						move_animation_progress = 1.0 - Drawing.easing_for_mode (AnimationMode.EASE_OUT_CIRC, move_time, move_duration);
+						move_animation_progress = 1.0 - easing_for_mode (AnimationMode.EASE_OUT_CIRC, move_time, move_duration);
 					}
 					var change = move_animation_progress * (icon_size + position_manager.ItemPadding);
 					x_offset += (item.Position < item.LastPosition ? change : -change);
@@ -688,7 +688,7 @@ namespace Plank
 			
 			// animate icon on invalid state
 			if ((item.State & ItemState.INVALID) != 0) {
-				var invalid_duration = 3000 * 1000;
+				var invalid_duration = ITEM_INVALID_DURATION * 1000;
 				var invalid_time = int64.max (0LL, frame_time - item.LastValid);
 				if (invalid_time < invalid_duration) {
 					draw_value.opacity = 0.10 + (0.90 * (Math.cos (invalid_time / (double) invalid_duration * 4.5 * Math.PI) + 1) / 2);
@@ -705,7 +705,7 @@ namespace Plank
 		}
 		
 		[CCode (instance_pos = -1)]
-		void post_process_draw_values (Gee.HashMap<DockElement, PositionManager.DockItemDrawValue?> draw_values)
+		void post_process_draw_values (Gee.HashMap<DockElement, DockItemDrawValue?> draw_values)
 		{
 			if (dynamic_animation_offset == 0.0)
 				return;
@@ -744,36 +744,48 @@ namespace Plank
 			if (x_offset == 0.0)
 				return;
 			
-#if HAVE_GEE_0_8
 			draw_values.map_iterator ().foreach ((i, val) => {
 				val.move_right (position, x_offset);
 				return true;
 			});
-#else
-			var draw_values_it = draw_values.map_iterator ();
-			while (draw_values_it.next ()) {
-				var val = draw_values_it.get_value ();
-				val.move_right (position, x_offset);
-			}
-#endif
 		}
 		
-		void draw_item (Cairo.Context cr, DockItem item, PositionManager.DockItemDrawValue draw_value, int64 frame_time)
+		inline Surface get_item_surface (DockItem item, int icon_size)
+		{
+			var private_icon_surface = item.get_surface (icon_size, icon_size, item_buffer);
+			if (!screen_is_composited)
+				return private_icon_surface;
+			
+			// FIXME There is probably a nicer way to accomplish this
+			// Check if the underlying cache returned a marked surface and if needed
+			// request another draw with the currently assumed largest required size
+			string? drawing_status;
+			unowned PositionManager position_manager = controller.position_manager;
+			var max_icon_size = position_manager.ZoomIconSize * window_scale_factor;
+			if (icon_size < max_icon_size
+				&& ((drawing_status = private_icon_surface.steal_qdata<string> (quark_surface_stats)) != null
+				&& drawing_status == SURFACE_STATS_DRAWING_TIME_EXCEEDED))
+				item.get_surface (max_icon_size, max_icon_size, item_buffer);
+			
+			return private_icon_surface;
+		}
+		
+		void draw_item (Cairo.Context cr, DockItem item, DockItemDrawValue draw_value, int64 frame_time)
 		{
 			unowned PositionManager position_manager = controller.position_manager;
-			var icon_size = (int) draw_value.icon_size;
+			var icon_size = (int) draw_value.icon_size * window_scale_factor;
 			var position = position_manager.Position;
 			
 			// load the icon
 #if BENCHMARK
 			var start = new DateTime.now_local ();
 #endif
-			var icon_surface = item.get_surface_copy (icon_size * window_scale_factor, icon_size * window_scale_factor, item_buffer);
+			var icon_surface = get_item_surface (item, icon_size).copy ();
 			unowned Cairo.Context icon_cr = icon_surface.Context;
 			
-			DockSurface? icon_overlay_surface = null;
+			Surface? icon_overlay_surface = null;
 			if (item.CountVisible || item.ProgressVisible)
-				icon_overlay_surface = item.get_foreground_surface (icon_size * window_scale_factor, icon_size * window_scale_factor, item_buffer, (DrawDataFunc<DockItem>) draw_item_foreground);
+				icon_overlay_surface = item.get_foreground_surface (icon_size, icon_size, item_buffer, (DrawDataFunc<DockItem>) draw_item_foreground);
 			
 			if (icon_overlay_surface != null) {
 				icon_cr.set_source_surface (icon_overlay_surface.Internal, 0, 0);
@@ -829,7 +841,7 @@ namespace Plank
 				draw_indicator_state (cr, draw_value.hover_region, item.Indicator, item.State);
 		}
 		
-		void draw_item_shadow (Cairo.Context cr, DockItem item, PositionManager.DockItemDrawValue draw_value)
+		void draw_item_shadow (Cairo.Context cr, DockItem item, DockItemDrawValue draw_value)
 		{
 			unowned PositionManager position_manager = controller.position_manager;
 			var shadow_size = position_manager.IconShadowSize;
@@ -837,7 +849,7 @@ namespace Plank
 			var icon_size = (int) (draw_value.icon_size + 2 * shadow_size) * window_scale_factor;
 			
 			// load and draw the icon shadow
-			DockSurface? icon_shadow_surface = null;
+			Surface? icon_shadow_surface = null;
 			if (shadow_size > 0)
 				icon_shadow_surface = item.get_background_surface (icon_size, icon_size, item_buffer, (DrawDataFunc<DockItem>) draw_item_background);
 			
@@ -859,12 +871,12 @@ namespace Plank
 		}
 		
 		[CCode (instance_pos = -1)]
-		DockSurface draw_item_foreground (int width, int height, DockSurface model, DockItem item)
+		Surface draw_item_foreground (int width, int height, Surface model, DockItem item)
 		{
 			Logger.verbose ("DockItem.draw_item_overlay (width = %i, height = %i)", width, height);
-			var surface = new DockSurface.with_dock_surface (width, height, model);
+			var surface = new Surface.with_surface (width, height, model);
 			
-			var icon_size = int.min (width, height) * window_scale_factor;
+			var icon_size = int.min (width, height);
 			var urgent_color = get_styled_color ();
 			urgent_color.add_hue (theme.UrgentHueShift);
 			
@@ -880,7 +892,7 @@ namespace Plank
 		}
 		
 		[CCode (instance_pos = -1)]
-		DockSurface draw_item_background (int width, int height, DockSurface model, DockItem item)
+		Surface draw_item_background (int width, int height, Surface model, DockItem item)
 		{
 			unowned PositionManager position_manager = controller.position_manager;
 			var shadow_size = position_manager.IconShadowSize * window_scale_factor;
@@ -890,7 +902,7 @@ namespace Plank
 			var icon_surface = item.get_surface (icon_size, icon_size, model);
 			
 			Logger.verbose ("DockItem.draw_icon_with_shadow (width = %i, height = %i, shadow_size = %i)", width, height, shadow_size);
-			var surface = new DockSurface.with_dock_surface (width, height, model);
+			var surface = new Surface.with_surface (width, height, model);
 			unowned Cairo.Context cr = surface.Context;
 			var shadow_surface = icon_surface.create_mask (0.4, null);
 			
@@ -934,7 +946,7 @@ namespace Plank
 				urgent_indicator_buffer = theme.create_indicator (position_manager.IndicatorSize, urgent_indicator_color, item_buffer);
 			}
 			
-			unowned DockSurface indicator_surface = (item_state & ItemState.URGENT) != 0 ? urgent_indicator_buffer : indicator_buffer;
+			unowned Surface indicator_surface = (item_state & ItemState.URGENT) != 0 ? urgent_indicator_buffer : indicator_buffer;
 			
 			var x = 0.0, y = 0.0;
 			switch (position_manager.Position) {
@@ -1000,12 +1012,12 @@ namespace Plank
 			cr.paint_with_alpha (opacity);
 		}
 		
-		Drawing.Color get_styled_color ()
+		Color get_styled_color ()
 		{
-			var background_selected_color = controller.window.get_style_context ().get_background_color (Gtk.StateFlags.SELECTED | Gtk.StateFlags.FOCUSED);
-			var selected_color = (Drawing.Color) background_selected_color;
-			selected_color.set_min_val (90 / (double) uint16.MAX);
-			return selected_color;
+			unowned Gtk.StyleContext context = theme.get_style_context ();
+			var color = (Color) context.get_background_color (context.get_state ());
+			color.set_min_val (90 / (double) uint16.MAX);
+			return color;
 		}
 		
 		void hidden_changed ()
@@ -1036,7 +1048,7 @@ namespace Plank
 			force_frame_time_update ();
 			var now = frame_time;
 			var diff = now - last_hovered_changed;
-			var time = 150 * 1000;
+			var time = DOCK_ZOOM_DURATION * 1000;
 			
 			if (diff < time)
 				last_hovered_changed = now + (diff - time);
@@ -1054,7 +1066,7 @@ namespace Plank
 			
 			local_cursor = new_cursor;
 			
-			if (controller.prefs.ZoomEnabled) {
+			if (screen_is_composited) {
 				zoom_changed = true;
 				animated_draw ();
 			}
@@ -1071,7 +1083,8 @@ namespace Plank
 					transient_items.add (item);
 			}
 			
-			animated_draw ();
+			if (transient_items.size > 0)
+				animated_draw ();
 		}
 		
 		/**
@@ -1085,7 +1098,7 @@ namespace Plank
 				return true;
 			}
 			
-			if (frame_time - last_hovered_changed <= 150 * 1000)
+			if (frame_time - last_hovered_changed <= DOCK_ZOOM_DURATION * 1000)
 				return true;
 			
 			if (theme.FadeOpacity == 1.0) {
@@ -1108,18 +1121,19 @@ namespace Plank
 
 		inline bool item_animation_needed (DockItem item, int64 render_time)
 		{
-			if (item.ClickedAnimation != Animation.NONE
-				&& render_time - item.LastClicked <= (item.ClickedAnimation == Animation.BOUNCE ? theme.LaunchBounceTime : theme.ClickTime) * 1000)
+			if (item.ClickedAnimation != AnimationType.NONE
+				&& render_time - item.LastClicked <= (item.ClickedAnimation == AnimationType.BOUNCE ? theme.LaunchBounceTime : theme.ClickTime) * 1000)
 				return true;
-			if (item.HoveredAnimation != Animation.NONE
-				&& render_time - item.LastHovered <= 150 * 1000)
+			if (item.HoveredAnimation != AnimationType.NONE
+				&& render_time - item.LastHovered <= ITEM_HOVER_DURATION * 1000)
 				return true;
-			if (item.ScrolledAnimation != Animation.NONE
-				&& render_time - item.LastScrolled <= 300 * 1000)
+			if (item.ScrolledAnimation != AnimationType.NONE
+				&& render_time - item.LastScrolled <= ITEM_SCROLL_DURATION * 1000)
 				return true;
 			if (render_time - item.LastActive <= theme.ActiveTime * 1000)
 				return true;
-			if (render_time - item.LastUrgent <= (hide_progress == 1.0 ? theme.GlowTime : theme.UrgentBounceTime) * 1000)
+			if (show_notifications
+				&& render_time - item.LastUrgent <= (hide_progress == 1.0 ? theme.GlowTime : theme.UrgentBounceTime) * 1000)
 				return true;
 			if (render_time - item.LastMove <= theme.ItemMoveTime * 1000)
 				return true;
@@ -1127,7 +1141,7 @@ namespace Plank
 				return true;
 			if (render_time - item.RemoveTime <= theme.ItemMoveTime * 1000)
 				return true;
-			if (render_time - item.LastValid <= 3000 * 1000)
+			if (render_time - item.LastValid <= ITEM_INVALID_DURATION * 1000)
 				return true;
 			
 			return false;
@@ -1148,6 +1162,14 @@ namespace Plank
 				return -1;
 			
 			return 1;
+		}
+		
+		static double easing_bounce (double t, double d, double n)
+			requires (t >= 0.0 && d > 0.0 && n >= 1.0)
+			requires (t <= d)
+		{
+			var p = t / d;
+			return Math.fabs (Math.sin (n * Math.PI * p) * double.min (1.0, (1.0 - p) * (2.0 * n) / (2.0 * n - 1.0)));
 		}
 		
 		static unowned string cairo_surface_type_to_string (Cairo.SurfaceType type)

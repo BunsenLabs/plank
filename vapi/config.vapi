@@ -26,6 +26,7 @@ namespace Build
 
 	public const string DATADIR;
 	public const string PKGDATADIR;
+	public const string DOCKLETSDIR;
 
 	public const string RELEASE_NAME;
 

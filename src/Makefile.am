@@ -27,14 +27,19 @@ plank_LDADD = \
 	$(top_builddir)/lib/libplank.la \
 	$(NULL)
 
+plank_LDFLAGS = \
+	-L$(pkglibdir) \
+	$(NULL)
+
 plank_VALASOURCES = \
 	Main.vala \
 	$(NULL)
 
 nodist_plank_SOURCES = \
-	plank_vala.stamp \
 	$(plank_VALASOURCES:.vala=.c) \
 	$(NULL)
+
+$(plank_VALASOURCES:.vala=.c): plank_vala.stamp
 
 plank_vala.stamp: $(plank_VALASOURCES) $(top_builddir)/lib/plank.vapi Makefile
 	$(AM_V_VALA)$(VALAC) \
@@ -43,6 +48,7 @@ plank_vala.stamp: $(plank_VALASOURCES) $(top_builddir)/lib/plank.vapi Makefile
 	$(AM_V_at)touch $@
 
 CLEANFILES = \
+	plank_vala.stamp \
 	$(nodist_plank_SOURCES) \
 	$(NULL)
 

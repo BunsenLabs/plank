@@ -93,17 +93,18 @@ host_triplet = @host@
 subdir = lib
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/gcov.m4 \
-	$(top_srcdir)/m4/gmock.m4 $(top_srcdir)/m4/intltool.m4 \
-	$(top_srcdir)/m4/libtool.m4 $(top_srcdir)/m4/ltoptions.m4 \
-	$(top_srcdir)/m4/ltsugar.m4 $(top_srcdir)/m4/ltversion.m4 \
-	$(top_srcdir)/m4/lt~obsolete.m4 $(top_srcdir)/m4/nls.m4 \
-	$(top_srcdir)/m4/pkg.m4 $(top_srcdir)/configure.ac
+	$(top_srcdir)/m4/gmock.m4 $(top_srcdir)/m4/gsettings.m4 \
+	$(top_srcdir)/m4/intltool.m4 $(top_srcdir)/m4/libtool.m4 \
+	$(top_srcdir)/m4/ltoptions.m4 $(top_srcdir)/m4/ltsugar.m4 \
+	$(top_srcdir)/m4/ltversion.m4 $(top_srcdir)/m4/lt~obsolete.m4 \
+	$(top_srcdir)/m4/nls.m4 $(top_srcdir)/m4/pkg.m4 \
+	$(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 DIST_COMMON = $(srcdir)/Makefile.am $(am__DIST_COMMON)
 mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = $(top_builddir)/config.h
-CONFIG_CLEAN_FILES = plank.deps plank.pc Version.vala
+CONFIG_CLEAN_FILES = plank.pc Version.vala
 CONFIG_CLEAN_VPATH_FILES =
 am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
 am__vpath_adj = case $$p in \
@@ -140,10 +141,14 @@ libplank_internal_la_DEPENDENCIES = $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1)
 am__objects_1 =
 am_libplank_internal_la_OBJECTS = libplank_internal_la-glib-compat.lo \
-	$(am__objects_1)
+	libplank_internal_la-gtk-compat.lo $(am__objects_1)
 am__dirstamp = $(am__leading_dot)dirstamp
-am__objects_2 = Services/libplank_internal_la-Matcher.lo \
+am__objects_2 = libplank_internal_la-InternalConsts.lo \
+	libplank_internal_la-InternalQuarks.lo \
+	Services/libplank_internal_la-Matcher.lo \
 	Services/libplank_internal_la-WindowControl.lo \
+	Services/libplank_internal_la-Utils.lo \
+	Widgets/libplank_internal_la-DockletViewModel.lo \
 	$(am__objects_1)
 nodist_libplank_internal_la_OBJECTS = $(am__objects_2) \
 	$(am__objects_1)
@@ -165,23 +170,27 @@ am__objects_4 = Version.lo $(am__objects_1)
 am__objects_5 = DBusManager.lo DockController.lo DockPreferences.lo \
 	DockRenderer.lo DragManager.lo HideManager.lo \
 	PositionManager.lo DBus/Client.lo DBus/Interfaces.lo \
-	Drawing/AnimatedRenderer.lo Drawing/Color.lo \
-	Drawing/DrawingService.lo Drawing/DockSurface.lo \
-	Drawing/DockTheme.lo Drawing/Easing.lo Drawing/SurfaceCache.lo \
-	Drawing/Theme.lo Factories/AbstractMain.lo \
-	Factories/Factory.lo Factories/ItemFactory.lo \
-	Items/ApplicationDockItem.lo \
+	Docklets/Docklet.lo Docklets/DockletItem.lo \
+	Docklets/DockletManager.lo Drawing/Color.lo \
+	Drawing/DrawingService.lo Drawing/DockTheme.lo \
+	Drawing/Easing.lo Drawing/Renderer.lo Drawing/Surface.lo \
+	Drawing/SurfaceCache.lo Drawing/Theme.lo \
+	Factories/AbstractMain.lo Factories/Factory.lo \
+	Factories/ItemFactory.lo Items/ApplicationDockItem.lo \
 	Items/ApplicationDockItemProvider.lo \
 	Items/DefaultApplicationDockItemProvider.lo \
 	Items/DockContainer.lo Items/DockItem.lo \
-	Items/DockItemProvider.lo Items/DockItemPreferences.lo \
-	Items/DockElement.lo Items/Enums.lo Items/FileDockItem.lo \
+	Items/DockItemDrawValue.lo Items/DockItemProvider.lo \
+	Items/DockItemPreferences.lo Items/DockElement.lo \
+	Items/Enums.lo Items/FileDockItem.lo \
 	Items/PlaceholderDockItem.lo Items/PlankDockItem.lo \
-	Items/TransientDockItem.lo Services/Logger.lo \
-	Services/Paths.lo Services/Preferences.lo Services/System.lo \
-	Services/Worker.lo Widgets/CompositedWindow.lo \
-	Widgets/DockWindow.lo Widgets/HoverWindow.lo \
-	Widgets/PoofWindow.lo Widgets/PreferencesWindow.lo \
+	Items/TransientDockItem.lo Services/Environment.lo \
+	Services/EnvironmentSettings.lo Services/Logger.lo \
+	Services/Paths.lo Services/Preferences.lo Services/Settings.lo \
+	Services/System.lo Services/Unity.lo Services/Worker.lo \
+	Widgets/CompositedWindow.lo Widgets/DockWindow.lo \
+	Widgets/HoverWindow.lo Widgets/PoofWindow.lo \
+	Widgets/PreferencesWindow.lo \
 	Widgets/TitledSeparatorMenuItem.lo $(am__objects_1)
 nodist_libplank_la_OBJECTS = $(am__objects_3) $(am__objects_4) \
 	$(am__objects_5) $(am__objects_1)
@@ -431,8 +440,8 @@ TEST_LOG_DRIVER = $(SHELL) $(top_srcdir)/build-aux/test-driver
 TEST_LOG_COMPILE = $(TEST_LOG_COMPILER) $(AM_TEST_LOG_FLAGS) \
 	$(TEST_LOG_FLAGS)
 am__DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/Version.vala.in \
-	$(srcdir)/plank.deps.in $(srcdir)/plank.pc.in \
-	$(top_srcdir)/Makefile.common $(top_srcdir)/build-aux/depcomp \
+	$(srcdir)/plank.pc.in $(top_srcdir)/Makefile.common \
+	$(top_srcdir)/build-aux/depcomp \
 	$(top_srcdir)/build-aux/test-driver
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 ACLOCAL = @ACLOCAL@
@@ -466,6 +475,7 @@ DBUS_LAUNCH = @DBUS_LAUNCH@
 DEFS = @DEFS@
 DEPDIR = @DEPDIR@
 DLLTOOL = @DLLTOOL@
+DOCKLET_LDFLAGS = @DOCKLET_LDFLAGS@
 DSYMUTIL = @DSYMUTIL@
 DUMPBIN = @DUMPBIN@
 ECHO_C = @ECHO_C@
@@ -474,23 +484,18 @@ ECHO_T = @ECHO_T@
 EGREP = @EGREP@
 EXEEXT = @EXEEXT@
 FGREP = @FGREP@
-FRAMECLOCK_CFLAGS = @FRAMECLOCK_CFLAGS@
-FRAMECLOCK_LIBS = @FRAMECLOCK_LIBS@
 GCOVR = @GCOVR@
-GEE_DEPEND = @GEE_DEPEND@
 GENHTML = @GENHTML@
 GETTEXT_PACKAGE = @GETTEXT_PACKAGE@
-GLIB_2_34_CFLAGS = @GLIB_2_34_CFLAGS@
-GLIB_2_34_LIBS = @GLIB_2_34_LIBS@
 GLIB_COMPILE_RESOURCES = @GLIB_COMPILE_RESOURCES@
+GLIB_COMPILE_SCHEMAS = @GLIB_COMPILE_SCHEMAS@
 GMOCK_INCLUDEDIR = @GMOCK_INCLUDEDIR@
 GMOCK_SRCDIR = @GMOCK_SRCDIR@
 GMSGFMT = @GMSGFMT@
 GREP = @GREP@
+GSETTINGS_DISABLE_SCHEMAS_COMPILE = @GSETTINGS_DISABLE_SCHEMAS_COMPILE@
 GTEST_INCLUDEDIR = @GTEST_INCLUDEDIR@
 GTEST_SRCDIR = @GTEST_SRCDIR@
-GTK_CFLAGS = @GTK_CFLAGS@
-GTK_LIBS = @GTK_LIBS@
 HIDPI_CFLAGS = @HIDPI_CFLAGS@
 HIDPI_LIBS = @HIDPI_LIBS@
 INSTALL = @INSTALL@
@@ -519,6 +524,7 @@ LTLIBOBJS = @LTLIBOBJS@
 LT_AGE = @LT_AGE@
 LT_CURRENT = @LT_CURRENT@
 LT_REVISION = @LT_REVISION@
+LT_SYS_LIBRARY_PATH = @LT_SYS_LIBRARY_PATH@
 MAINT = @MAINT@
 MAKEINFO = @MAKEINFO@
 MANIFEST_TOOL = @MANIFEST_TOOL@
@@ -593,6 +599,7 @@ datarootdir = @datarootdir@
 docdir = @docdir@
 dvidir = @dvidir@
 exec_prefix = @exec_prefix@
+gsettingsschemadir = @gsettingsschemadir@
 host = @host@
 host_alias = @host_alias@
 host_cpu = @host_cpu@
@@ -615,6 +622,7 @@ pdfdir = @pdfdir@
 prefix = @prefix@
 program_transform_name = @program_transform_name@
 psdir = @psdir@
+runstatedir = @runstatedir@
 sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 srcdir = @srcdir@
@@ -633,6 +641,7 @@ AM_CPPFLAGS = \
 	-DPKGDATADIR=\"$(pkgdatadir)\" \
 	-DLIBDIR=\"$(libdir)\" \
 	-DPKGLIBDIR=\"$(pkglibdir)\" \
+	-DDOCKLETSDIR=\"$(pkglibdir)/docklets\" \
 	$(NULL)
 
 AM_CFLAGS = \
@@ -655,8 +664,6 @@ AM_VALAFLAGS = \
 	$(NULL)
 
 BUILT_SOURCES = \
-	libplank_internal_la_vala.stamp \
-	libplank_la_vala.stamp \
 	plank.h \
 	plank-resources.c \
 	$(NULL)
@@ -701,12 +708,15 @@ libplank_la_VALASOURCES = \
 	PositionManager.vala \
 	DBus/Client.vala \
 	DBus/Interfaces.vala \
-	Drawing/AnimatedRenderer.vala \
+	Docklets/Docklet.vala \
+	Docklets/DockletItem.vala \
+	Docklets/DockletManager.vala \
 	Drawing/Color.vala \
 	Drawing/DrawingService.vala \
-	Drawing/DockSurface.vala \
 	Drawing/DockTheme.vala \
 	Drawing/Easing.vala \
+	Drawing/Renderer.vala \
+	Drawing/Surface.vala \
 	Drawing/SurfaceCache.vala \
 	Drawing/Theme.vala \
 	Factories/AbstractMain.vala \
@@ -717,6 +727,7 @@ libplank_la_VALASOURCES = \
 	Items/DefaultApplicationDockItemProvider.vala \
 	Items/DockContainer.vala \
 	Items/DockItem.vala \
+	Items/DockItemDrawValue.vala \
 	Items/DockItemProvider.vala \
 	Items/DockItemPreferences.vala \
 	Items/DockElement.vala \
@@ -725,10 +736,14 @@ libplank_la_VALASOURCES = \
 	Items/PlaceholderDockItem.vala \
 	Items/PlankDockItem.vala \
 	Items/TransientDockItem.vala \
+	Services/Environment.vala \
+	Services/EnvironmentSettings.vala \
 	Services/Logger.vala \
 	Services/Paths.vala \
 	Services/Preferences.vala \
+	Services/Settings.vala \
 	Services/System.vala \
+	Services/Unity.vala \
 	Services/Worker.vala \
 	Widgets/CompositedWindow.vala \
 	Widgets/DockWindow.vala \
@@ -765,12 +780,17 @@ libplank_internal_la_LIBADD = \
 	$(NULL)
 
 libplank_internal_la_VALASOURCES = \
+	InternalConsts.vala \
+	InternalQuarks.vala \
 	Services/Matcher.vala \
 	Services/WindowControl.vala \
+	Services/Utils.vala \
+	Widgets/DockletViewModel.vala \
 	$(NULL)
 
 libplank_internal_la_SOURCES = \
 	glib-compat.c \
+	gtk-compat.c \
 	$(NULL)
 
 nodist_libplank_internal_la_SOURCES = \
@@ -779,10 +799,11 @@ nodist_libplank_internal_la_SOURCES = \
 
 TESTS = abicheck.sh
 CLEANFILES = \
+	libplank_la_vala.stamp \
+	libplank_internal_la_vala.stamp \
 	$(nodist_libplank_la_SOURCES) \
 	$(nodist_libplank_internal_la_SOURCES) \
 	build-abi \
-	plank.deps \
 	plank.pc \
 	plank.vapi \
 	plank.h \
@@ -796,7 +817,7 @@ EXTRA_DIST = \
 	$(libplank_internal_la_VALASOURCES) \
 	abicheck.sh \
 	libplank.symbols \
-	plank.deps.in \
+	plank.deps \
 	plank.pc.in \
 	Version.vala.in \
 	$(NULL)
@@ -836,8 +857,6 @@ $(top_srcdir)/configure: @MAINTAINER_MODE_TRUE@ $(am__configure_deps)
 $(ACLOCAL_M4): @MAINTAINER_MODE_TRUE@ $(am__aclocal_m4_deps)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
 $(am__aclocal_m4_deps):
-plank.deps: $(top_builddir)/config.status $(srcdir)/plank.deps.in
-	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@
 plank.pc: $(top_builddir)/config.status $(srcdir)/plank.pc.in
 	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@
 Version.vala: $(top_builddir)/config.status $(srcdir)/Version.vala.in
@@ -898,6 +917,16 @@ Services/libplank_internal_la-Matcher.lo: Services/$(am__dirstamp) \
 	Services/$(DEPDIR)/$(am__dirstamp)
 Services/libplank_internal_la-WindowControl.lo:  \
 	Services/$(am__dirstamp) Services/$(DEPDIR)/$(am__dirstamp)
+Services/libplank_internal_la-Utils.lo: Services/$(am__dirstamp) \
+	Services/$(DEPDIR)/$(am__dirstamp)
+Widgets/$(am__dirstamp):
+	@$(MKDIR_P) Widgets
+	@: > Widgets/$(am__dirstamp)
+Widgets/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) Widgets/$(DEPDIR)
+	@: > Widgets/$(DEPDIR)/$(am__dirstamp)
+Widgets/libplank_internal_la-DockletViewModel.lo:  \
+	Widgets/$(am__dirstamp) Widgets/$(DEPDIR)/$(am__dirstamp)
 
 libplank-internal.la: $(libplank_internal_la_OBJECTS) $(libplank_internal_la_DEPENDENCIES) $(EXTRA_libplank_internal_la_DEPENDENCIES) 
 	$(AM_V_CCLD)$(libplank_internal_la_LINK)  $(libplank_internal_la_OBJECTS) $(libplank_internal_la_LIBADD) $(LIBS)
@@ -910,23 +939,35 @@ DBus/$(DEPDIR)/$(am__dirstamp):
 DBus/Client.lo: DBus/$(am__dirstamp) DBus/$(DEPDIR)/$(am__dirstamp)
 DBus/Interfaces.lo: DBus/$(am__dirstamp) \
 	DBus/$(DEPDIR)/$(am__dirstamp)
+Docklets/$(am__dirstamp):
+	@$(MKDIR_P) Docklets
+	@: > Docklets/$(am__dirstamp)
+Docklets/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) Docklets/$(DEPDIR)
+	@: > Docklets/$(DEPDIR)/$(am__dirstamp)
+Docklets/Docklet.lo: Docklets/$(am__dirstamp) \
+	Docklets/$(DEPDIR)/$(am__dirstamp)
+Docklets/DockletItem.lo: Docklets/$(am__dirstamp) \
+	Docklets/$(DEPDIR)/$(am__dirstamp)
+Docklets/DockletManager.lo: Docklets/$(am__dirstamp) \
+	Docklets/$(DEPDIR)/$(am__dirstamp)
 Drawing/$(am__dirstamp):
 	@$(MKDIR_P) Drawing
 	@: > Drawing/$(am__dirstamp)
 Drawing/$(DEPDIR)/$(am__dirstamp):
 	@$(MKDIR_P) Drawing/$(DEPDIR)
 	@: > Drawing/$(DEPDIR)/$(am__dirstamp)
-Drawing/AnimatedRenderer.lo: Drawing/$(am__dirstamp) \
-	Drawing/$(DEPDIR)/$(am__dirstamp)
 Drawing/Color.lo: Drawing/$(am__dirstamp) \
 	Drawing/$(DEPDIR)/$(am__dirstamp)
 Drawing/DrawingService.lo: Drawing/$(am__dirstamp) \
 	Drawing/$(DEPDIR)/$(am__dirstamp)
-Drawing/DockSurface.lo: Drawing/$(am__dirstamp) \
-	Drawing/$(DEPDIR)/$(am__dirstamp)
 Drawing/DockTheme.lo: Drawing/$(am__dirstamp) \
 	Drawing/$(DEPDIR)/$(am__dirstamp)
 Drawing/Easing.lo: Drawing/$(am__dirstamp) \
+	Drawing/$(DEPDIR)/$(am__dirstamp)
+Drawing/Renderer.lo: Drawing/$(am__dirstamp) \
+	Drawing/$(DEPDIR)/$(am__dirstamp)
+Drawing/Surface.lo: Drawing/$(am__dirstamp) \
 	Drawing/$(DEPDIR)/$(am__dirstamp)
 Drawing/SurfaceCache.lo: Drawing/$(am__dirstamp) \
 	Drawing/$(DEPDIR)/$(am__dirstamp)
@@ -960,6 +1001,8 @@ Items/DockContainer.lo: Items/$(am__dirstamp) \
 	Items/$(DEPDIR)/$(am__dirstamp)
 Items/DockItem.lo: Items/$(am__dirstamp) \
 	Items/$(DEPDIR)/$(am__dirstamp)
+Items/DockItemDrawValue.lo: Items/$(am__dirstamp) \
+	Items/$(DEPDIR)/$(am__dirstamp)
 Items/DockItemProvider.lo: Items/$(am__dirstamp) \
 	Items/$(DEPDIR)/$(am__dirstamp)
 Items/DockItemPreferences.lo: Items/$(am__dirstamp) \
@@ -975,22 +1018,24 @@ Items/PlankDockItem.lo: Items/$(am__dirstamp) \
 	Items/$(DEPDIR)/$(am__dirstamp)
 Items/TransientDockItem.lo: Items/$(am__dirstamp) \
 	Items/$(DEPDIR)/$(am__dirstamp)
+Services/Environment.lo: Services/$(am__dirstamp) \
+	Services/$(DEPDIR)/$(am__dirstamp)
+Services/EnvironmentSettings.lo: Services/$(am__dirstamp) \
+	Services/$(DEPDIR)/$(am__dirstamp)
 Services/Logger.lo: Services/$(am__dirstamp) \
 	Services/$(DEPDIR)/$(am__dirstamp)
 Services/Paths.lo: Services/$(am__dirstamp) \
 	Services/$(DEPDIR)/$(am__dirstamp)
 Services/Preferences.lo: Services/$(am__dirstamp) \
 	Services/$(DEPDIR)/$(am__dirstamp)
+Services/Settings.lo: Services/$(am__dirstamp) \
+	Services/$(DEPDIR)/$(am__dirstamp)
 Services/System.lo: Services/$(am__dirstamp) \
+	Services/$(DEPDIR)/$(am__dirstamp)
+Services/Unity.lo: Services/$(am__dirstamp) \
 	Services/$(DEPDIR)/$(am__dirstamp)
 Services/Worker.lo: Services/$(am__dirstamp) \
 	Services/$(DEPDIR)/$(am__dirstamp)
-Widgets/$(am__dirstamp):
-	@$(MKDIR_P) Widgets
-	@: > Widgets/$(am__dirstamp)
-Widgets/$(DEPDIR)/$(am__dirstamp):
-	@$(MKDIR_P) Widgets/$(DEPDIR)
-	@: > Widgets/$(DEPDIR)/$(am__dirstamp)
 Widgets/CompositedWindow.lo: Widgets/$(am__dirstamp) \
 	Widgets/$(DEPDIR)/$(am__dirstamp)
 Widgets/DockWindow.lo: Widgets/$(am__dirstamp) \
@@ -1011,6 +1056,8 @@ mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
 	-rm -f DBus/*.$(OBJEXT)
 	-rm -f DBus/*.lo
+	-rm -f Docklets/*.$(OBJEXT)
+	-rm -f Docklets/*.lo
 	-rm -f Drawing/*.$(OBJEXT)
 	-rm -f Drawing/*.lo
 	-rm -f Factories/*.$(OBJEXT)
@@ -1033,16 +1080,22 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/HideManager.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/PositionManager.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Version.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libplank_internal_la-InternalConsts.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libplank_internal_la-InternalQuarks.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libplank_internal_la-glib-compat.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libplank_internal_la-gtk-compat.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/plank-resources.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@DBus/$(DEPDIR)/Client.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@DBus/$(DEPDIR)/Interfaces.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@Drawing/$(DEPDIR)/AnimatedRenderer.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@Docklets/$(DEPDIR)/Docklet.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@Docklets/$(DEPDIR)/DockletItem.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@Docklets/$(DEPDIR)/DockletManager.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@Drawing/$(DEPDIR)/Color.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@Drawing/$(DEPDIR)/DockSurface.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@Drawing/$(DEPDIR)/DockTheme.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@Drawing/$(DEPDIR)/DrawingService.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@Drawing/$(DEPDIR)/Easing.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@Drawing/$(DEPDIR)/Renderer.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@Drawing/$(DEPDIR)/Surface.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@Drawing/$(DEPDIR)/SurfaceCache.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@Drawing/$(DEPDIR)/Theme.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@Factories/$(DEPDIR)/AbstractMain.Plo@am__quote@
@@ -1054,6 +1107,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@Items/$(DEPDIR)/DockContainer.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@Items/$(DEPDIR)/DockElement.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@Items/$(DEPDIR)/DockItem.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@Items/$(DEPDIR)/DockItemDrawValue.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@Items/$(DEPDIR)/DockItemPreferences.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@Items/$(DEPDIR)/DockItemProvider.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@Items/$(DEPDIR)/Enums.Plo@am__quote@
@@ -1061,12 +1115,17 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@Items/$(DEPDIR)/PlaceholderDockItem.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@Items/$(DEPDIR)/PlankDockItem.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@Items/$(DEPDIR)/TransientDockItem.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@Services/$(DEPDIR)/Environment.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@Services/$(DEPDIR)/EnvironmentSettings.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@Services/$(DEPDIR)/Logger.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@Services/$(DEPDIR)/Paths.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@Services/$(DEPDIR)/Preferences.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@Services/$(DEPDIR)/Settings.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@Services/$(DEPDIR)/System.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@Services/$(DEPDIR)/Unity.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@Services/$(DEPDIR)/Worker.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@Services/$(DEPDIR)/libplank_internal_la-Matcher.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@Services/$(DEPDIR)/libplank_internal_la-Utils.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@Services/$(DEPDIR)/libplank_internal_la-WindowControl.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@Widgets/$(DEPDIR)/CompositedWindow.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@Widgets/$(DEPDIR)/DockWindow.Plo@am__quote@
@@ -1074,6 +1133,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@Widgets/$(DEPDIR)/PoofWindow.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@Widgets/$(DEPDIR)/PreferencesWindow.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@Widgets/$(DEPDIR)/TitledSeparatorMenuItem.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@Widgets/$(DEPDIR)/libplank_internal_la-DockletViewModel.Plo@am__quote@
 
 .c.o:
 @am__fastdepCC_TRUE@	$(AM_V_CC)depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.o$$||'`;\
@@ -1106,6 +1166,27 @@ libplank_internal_la-glib-compat.lo: glib-compat.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libplank_internal_la_CFLAGS) $(CFLAGS) -c -o libplank_internal_la-glib-compat.lo `test -f 'glib-compat.c' || echo '$(srcdir)/'`glib-compat.c
 
+libplank_internal_la-gtk-compat.lo: gtk-compat.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libplank_internal_la_CFLAGS) $(CFLAGS) -MT libplank_internal_la-gtk-compat.lo -MD -MP -MF $(DEPDIR)/libplank_internal_la-gtk-compat.Tpo -c -o libplank_internal_la-gtk-compat.lo `test -f 'gtk-compat.c' || echo '$(srcdir)/'`gtk-compat.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libplank_internal_la-gtk-compat.Tpo $(DEPDIR)/libplank_internal_la-gtk-compat.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='gtk-compat.c' object='libplank_internal_la-gtk-compat.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libplank_internal_la_CFLAGS) $(CFLAGS) -c -o libplank_internal_la-gtk-compat.lo `test -f 'gtk-compat.c' || echo '$(srcdir)/'`gtk-compat.c
+
+libplank_internal_la-InternalConsts.lo: InternalConsts.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libplank_internal_la_CFLAGS) $(CFLAGS) -MT libplank_internal_la-InternalConsts.lo -MD -MP -MF $(DEPDIR)/libplank_internal_la-InternalConsts.Tpo -c -o libplank_internal_la-InternalConsts.lo `test -f 'InternalConsts.c' || echo '$(srcdir)/'`InternalConsts.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libplank_internal_la-InternalConsts.Tpo $(DEPDIR)/libplank_internal_la-InternalConsts.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='InternalConsts.c' object='libplank_internal_la-InternalConsts.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libplank_internal_la_CFLAGS) $(CFLAGS) -c -o libplank_internal_la-InternalConsts.lo `test -f 'InternalConsts.c' || echo '$(srcdir)/'`InternalConsts.c
+
+libplank_internal_la-InternalQuarks.lo: InternalQuarks.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libplank_internal_la_CFLAGS) $(CFLAGS) -MT libplank_internal_la-InternalQuarks.lo -MD -MP -MF $(DEPDIR)/libplank_internal_la-InternalQuarks.Tpo -c -o libplank_internal_la-InternalQuarks.lo `test -f 'InternalQuarks.c' || echo '$(srcdir)/'`InternalQuarks.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libplank_internal_la-InternalQuarks.Tpo $(DEPDIR)/libplank_internal_la-InternalQuarks.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='InternalQuarks.c' object='libplank_internal_la-InternalQuarks.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libplank_internal_la_CFLAGS) $(CFLAGS) -c -o libplank_internal_la-InternalQuarks.lo `test -f 'InternalQuarks.c' || echo '$(srcdir)/'`InternalQuarks.c
+
 Services/libplank_internal_la-Matcher.lo: Services/Matcher.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libplank_internal_la_CFLAGS) $(CFLAGS) -MT Services/libplank_internal_la-Matcher.lo -MD -MP -MF Services/$(DEPDIR)/libplank_internal_la-Matcher.Tpo -c -o Services/libplank_internal_la-Matcher.lo `test -f 'Services/Matcher.c' || echo '$(srcdir)/'`Services/Matcher.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) Services/$(DEPDIR)/libplank_internal_la-Matcher.Tpo Services/$(DEPDIR)/libplank_internal_la-Matcher.Plo
@@ -1120,12 +1201,27 @@ Services/libplank_internal_la-WindowControl.lo: Services/WindowControl.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libplank_internal_la_CFLAGS) $(CFLAGS) -c -o Services/libplank_internal_la-WindowControl.lo `test -f 'Services/WindowControl.c' || echo '$(srcdir)/'`Services/WindowControl.c
 
+Services/libplank_internal_la-Utils.lo: Services/Utils.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libplank_internal_la_CFLAGS) $(CFLAGS) -MT Services/libplank_internal_la-Utils.lo -MD -MP -MF Services/$(DEPDIR)/libplank_internal_la-Utils.Tpo -c -o Services/libplank_internal_la-Utils.lo `test -f 'Services/Utils.c' || echo '$(srcdir)/'`Services/Utils.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) Services/$(DEPDIR)/libplank_internal_la-Utils.Tpo Services/$(DEPDIR)/libplank_internal_la-Utils.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='Services/Utils.c' object='Services/libplank_internal_la-Utils.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libplank_internal_la_CFLAGS) $(CFLAGS) -c -o Services/libplank_internal_la-Utils.lo `test -f 'Services/Utils.c' || echo '$(srcdir)/'`Services/Utils.c
+
+Widgets/libplank_internal_la-DockletViewModel.lo: Widgets/DockletViewModel.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libplank_internal_la_CFLAGS) $(CFLAGS) -MT Widgets/libplank_internal_la-DockletViewModel.lo -MD -MP -MF Widgets/$(DEPDIR)/libplank_internal_la-DockletViewModel.Tpo -c -o Widgets/libplank_internal_la-DockletViewModel.lo `test -f 'Widgets/DockletViewModel.c' || echo '$(srcdir)/'`Widgets/DockletViewModel.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) Widgets/$(DEPDIR)/libplank_internal_la-DockletViewModel.Tpo Widgets/$(DEPDIR)/libplank_internal_la-DockletViewModel.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='Widgets/DockletViewModel.c' object='Widgets/libplank_internal_la-DockletViewModel.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libplank_internal_la_CFLAGS) $(CFLAGS) -c -o Widgets/libplank_internal_la-DockletViewModel.lo `test -f 'Widgets/DockletViewModel.c' || echo '$(srcdir)/'`Widgets/DockletViewModel.c
+
 mostlyclean-libtool:
 	-rm -f *.lo
 
 clean-libtool:
 	-rm -rf .libs _libs
 	-rm -rf DBus/.libs DBus/_libs
+	-rm -rf Docklets/.libs Docklets/_libs
 	-rm -rf Drawing/.libs Drawing/_libs
 	-rm -rf Factories/.libs Factories/_libs
 	-rm -rf Items/.libs Items/_libs
@@ -1482,6 +1578,8 @@ distclean-generic:
 	-test . = "$(srcdir)" || test -z "$(CONFIG_CLEAN_VPATH_FILES)" || rm -f $(CONFIG_CLEAN_VPATH_FILES)
 	-rm -f DBus/$(DEPDIR)/$(am__dirstamp)
 	-rm -f DBus/$(am__dirstamp)
+	-rm -f Docklets/$(DEPDIR)/$(am__dirstamp)
+	-rm -f Docklets/$(am__dirstamp)
 	-rm -f Drawing/$(DEPDIR)/$(am__dirstamp)
 	-rm -f Drawing/$(am__dirstamp)
 	-rm -f Factories/$(DEPDIR)/$(am__dirstamp)
@@ -1503,7 +1601,7 @@ clean-am: clean-generic clean-libLTLIBRARIES clean-libtool \
 	clean-noinstLTLIBRARIES mostlyclean-am
 
 distclean: distclean-am
-	-rm -rf ./$(DEPDIR) DBus/$(DEPDIR) Drawing/$(DEPDIR) Factories/$(DEPDIR) Items/$(DEPDIR) Services/$(DEPDIR) Widgets/$(DEPDIR)
+	-rm -rf ./$(DEPDIR) DBus/$(DEPDIR) Docklets/$(DEPDIR) Drawing/$(DEPDIR) Factories/$(DEPDIR) Items/$(DEPDIR) Services/$(DEPDIR) Widgets/$(DEPDIR)
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-tags
@@ -1550,7 +1648,7 @@ install-ps-am:
 installcheck-am:
 
 maintainer-clean: maintainer-clean-am
-	-rm -rf ./$(DEPDIR) DBus/$(DEPDIR) Drawing/$(DEPDIR) Factories/$(DEPDIR) Items/$(DEPDIR) Services/$(DEPDIR) Widgets/$(DEPDIR)
+	-rm -rf ./$(DEPDIR) DBus/$(DEPDIR) Docklets/$(DEPDIR) Drawing/$(DEPDIR) Factories/$(DEPDIR) Items/$(DEPDIR) Services/$(DEPDIR) Widgets/$(DEPDIR)
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 
@@ -1600,6 +1698,7 @@ plank-resources.c: $(top_srcdir)/data/plank.gresource.xml Makefile $(shell $(GLI
 	$(AM_V_GEN) XMLLINT=$(XMLLINT) $(GLIB_COMPILE_RESOURCES) --target $@ --sourcedir $(top_srcdir)/data --generate --c-name plank $<
 
 plank.h plank.vapi: libplank_la_vala.stamp
+$(libplank_la_VALASOURCES:.vala=.c): libplank_la_vala.stamp
 
 libplank_la_vala.stamp build-abi: libplank_internal_la_vala.stamp $(libplank_la_VALASOURCES) $(libplank_la_BUILT_VALASOURCES) Makefile
 	$(AM_V_VALA)$(VALAC) \
@@ -1608,6 +1707,7 @@ libplank_la_vala.stamp build-abi: libplank_internal_la_vala.stamp $(libplank_la_
 		--library plank \
 		--symbols build-abi \
 		--vapi plank.vapi \
+		--gresources $(top_srcdir)/data/plank.gresource.xml \
 		$(filter %.vala %.c,$^)
 	$(AM_V_at)touch $@
 
@@ -1615,6 +1715,7 @@ symbols: build-abi
 	@cat $(builddir)/build-abi | sort > $(srcdir)/libplank.symbols
 
 plank-internal.h plank-internal.vapi: libplank_internal_la_vala.stamp
+$(libplank_internal_la_VALASOURCES:.vala=.c): libplank_internal_la_vala.stamp
 
 libplank_internal_la_vala.stamp: $(libplank_internal_la_VALASOURCES) Makefile
 	$(AM_V_VALA)$(VALAC) \

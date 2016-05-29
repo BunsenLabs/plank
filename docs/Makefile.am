@@ -27,12 +27,15 @@ plank_doc_files = \
 	$(top_builddir)/lib/Version.vala \
 	$(top_srcdir)/lib/DBus/Client.vala \
 	$(top_srcdir)/lib/DBus/Interfaces.vala \
-	$(top_srcdir)/lib/Drawing/AnimatedRenderer.vala \
+	$(top_srcdir)/lib/Docklets/Docklet.vala \
+	$(top_srcdir)/lib/Docklets/DockletItem.vala \
+	$(top_srcdir)/lib/Docklets/DockletManager.vala \
 	$(top_srcdir)/lib/Drawing/Color.vala \
 	$(top_srcdir)/lib/Drawing/DrawingService.vala \
-	$(top_srcdir)/lib/Drawing/DockSurface.vala \
 	$(top_srcdir)/lib/Drawing/DockTheme.vala \
 	$(top_srcdir)/lib/Drawing/Easing.vala \
+	$(top_srcdir)/lib/Drawing/Renderer.vala \
+	$(top_srcdir)/lib/Drawing/Surface.vala \
 	$(top_srcdir)/lib/Drawing/SurfaceCache.vala \
 	$(top_srcdir)/lib/Drawing/Theme.vala \
 	$(top_srcdir)/lib/Factories/AbstractMain.vala \
@@ -44,6 +47,7 @@ plank_doc_files = \
 	$(top_srcdir)/lib/Items/DockContainer.vala \
 	$(top_srcdir)/lib/Items/DockElement.vala \
 	$(top_srcdir)/lib/Items/DockItem.vala \
+	$(top_srcdir)/lib/Items/DockItemDrawValue.vala \
 	$(top_srcdir)/lib/Items/DockItemProvider.vala \
 	$(top_srcdir)/lib/Items/DockItemPreferences.vala \
 	$(top_srcdir)/lib/Items/Enums.vala \
@@ -51,10 +55,14 @@ plank_doc_files = \
 	$(top_srcdir)/lib/Items/PlaceholderDockItem.vala \
 	$(top_srcdir)/lib/Items/PlankDockItem.vala \
 	$(top_srcdir)/lib/Items/TransientDockItem.vala \
+	$(top_srcdir)/lib/Services/Environment.vala \
+	$(top_srcdir)/lib/Services/EnvironmentSettings.vala \
 	$(top_srcdir)/lib/Services/Logger.vala \
 	$(top_srcdir)/lib/Services/Paths.vala \
 	$(top_srcdir)/lib/Services/Preferences.vala \
+	$(top_srcdir)/lib/Services/Settings.vala \
 	$(top_srcdir)/lib/Services/System.vala \
+	$(top_srcdir)/lib/Services/Unity.vala \
 	$(top_srcdir)/lib/Services/Worker.vala \
 	$(top_srcdir)/lib/Widgets/CompositedWindow.vala \
 	$(top_srcdir)/lib/Widgets/DockWindow.vala \

@@ -17,11 +17,7 @@
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-using Plank.Widgets;
-using Plank.Services;
-using Plank.Services.Windows;
-
-namespace Plank.Factories
+namespace Plank
 {
 	/**
 	 * The main class for all dock applications.  All docks should extend this class.
@@ -33,20 +29,14 @@ namespace Plank.Factories
 		 * The default command-line options for the dock.
 		 */
 		const OptionEntry[] options = {
-			{ "debug", 'd', 0, OptionArg.NONE, ref DEBUG, "Enable debug logging", null },
-			{ "verbose", 'v', 0, OptionArg.NONE, ref VERBOSE, "Enable verbose logging", null },
-			{ "name", 'n', 0, OptionArg.STRING, ref NAME, "The name of this dock", null },
-			{ "preferences", 0, 0, OptionArg.NONE, ref PREFERENCES, "Show the application's preferences dialog", null },
-			{ "version", 'V', 0, OptionArg.NONE, ref VERSION, "Show the application's version", null },
+			{ "debug", 'd', 0, OptionArg.NONE, null, "Enable debug logging", null },
+			{ "verbose", 'v', 0, OptionArg.NONE, null, "Enable verbose logging", null },
+			{ "name", 'n', 0, OptionArg.STRING, null, "The name of this dock", null },
+			{ "preferences", 0, 0, OptionArg.NONE, null, "Show the application's preferences dialog", null },
+			{ "version", 'V', 0, OptionArg.NONE, null, "Show the application's version", null },
 			{ null }
 		};
 
-		static bool DEBUG = false;
-		static bool VERBOSE = false;
-		static bool PREFERENCES = false;
-		static bool VERSION = false;
-		static string NAME = "dock1";
-		
 		static void sig_handler (int sig)
 		{
 			warning ("Caught signal (%d), exiting", sig);
@@ -98,10 +88,6 @@ namespace Plank.Factories
 		 */
 		public string app_dbus { get; construct; }
 		/**
-		 * The name of the path containing the dock's preferences.
-		 */
-		public string dock_name { get; protected set; }
-		/**
 		 * The name of this program's icon.
 		 */
 		public string app_icon { get; construct; }
@@ -144,13 +130,30 @@ namespace Plank.Factories
 		 */
 		public Gtk.License about_license_type { get; construct set; default = Gtk.License.UNKNOWN; }
 		
+		string dock_name = "";
+		
 		Gtk.AboutDialog? about_dlg;
 		PreferencesWindow? preferences_dlg;
-		DockController? controller;
+		DockController? primary_dock;
+		Gee.ArrayList<DockController> docks;
 		
 		construct
 		{
-			flags = ApplicationFlags.FLAGS_NONE;
+			flags = ApplicationFlags.HANDLES_COMMAND_LINE;
+			docks = new Gee.ArrayList<DockController> ();
+			
+			// set program name
+#if HAVE_SYS_PRCTL_H
+			prctl (15, exec_name);
+#else
+			setproctitle (exec_name);
+#endif
+			Environment.set_prgname (exec_name);
+			
+			Intl.bindtextdomain (Build.GETTEXT_PACKAGE, Build.DATADIR + "/locale");
+			Intl.bind_textdomain_codeset (Build.GETTEXT_PACKAGE, "UTF-8");
+			
+			add_main_option_entries (options);
 		}
 		
 		/**
@@ -164,61 +167,43 @@ namespace Plank.Factories
 		/**
 		 * {@inheritDoc}
 		 */
-		public override bool local_command_line (ref unowned string[] args, out int exit_status)
+		public override int handle_local_options (VariantDict options)
 		{
-			exit_status = 0;
-			
-			// set program name
-#if HAVE_SYS_PRCTL_H
-			prctl (15, exec_name);
-#else
-			setproctitle (exec_name);
-#endif
-			Environment.set_prgname (exec_name);
-			
-			Intl.bindtextdomain (Build.GETTEXT_PACKAGE, Build.DATADIR + "/locale");
-			Intl.bind_textdomain_codeset (Build.GETTEXT_PACKAGE, "UTF-8");
-			
-			var context = new OptionContext (null);
-			context.add_main_entries (options, exec_name);
-			context.add_group (Gtk.get_option_group (false));
-			
-			try {
-				unowned string[] args2 = args;
-				context.parse (ref args2);
-			} catch (OptionError e) {
-				printerr ("%s\n", e.message);
-				exit_status = 1;
-				return true;
-			}
-			
-			if (VERSION) {
+			if (options.contains ("version")) {
 				print ("%s\n", build_version);
-				return true;
+				return 0;
 			}
 			
-			if (VERBOSE)
+			Logger.initialize (program_name);
+			
+			if (options.contains ("verbose"))
 				Logger.DisplayLevel = LogLevel.VERBOSE;
-			else if (DEBUG)
+			else if (options.contains ("debug"))
 				Logger.DisplayLevel = LogLevel.DEBUG;
 			else
 				Logger.DisplayLevel = LogLevel.WARN;
 			
-			dock_name = NAME;
-			
-			application_id = "%s.%s".printf (app_dbus, dock_name);
-			
-			try {
-				register ();
-			} catch {
-				exit_status = 1;
-				return true;
+			if (options.lookup ("name", "&s", out dock_name)) {
+				application_id = "%s.%s".printf (app_dbus, dock_name);
+			} else {
+				dock_name = "";
+				application_id = app_dbus;
 			}
 			
-			if (get_is_registered () && PREFERENCES)
+			return -1;
+		}
+		
+		/**
+		 * {@inheritDoc}
+		 */
+		public override int command_line (ApplicationCommandLine command_line)
+		{
+			var options = command_line.get_options_dict ();
+			
+			if (options.contains ("preferences"))
 				activate_action ("preferences", null);
 			
-			return base.local_command_line (ref args, out exit_status);
+			return 0;
 		}
 		
 		/**
@@ -235,14 +220,12 @@ namespace Plank.Factories
 			assert (program_name != null);
 			assert (exec_name != null);
 			assert (app_dbus != null);
-			assert (dock_name != null);
 			
 			base.startup ();
 			
 			if (!Thread.supported ())
 				critical ("Problem initializing thread support.");
 			
-			Logger.initialize (program_name);
 			message ("%s version: %s", program_name, build_version);
 			message ("Kernel version: %s", Posix.utsname ().release);
 			message ("GLib version: %u.%u.%u (%u.%u.%u)",
@@ -254,12 +237,6 @@ namespace Plank.Factories
 			message ("Wnck version: %d.%d.%d", Wnck.Version.MAJOR_VERSION, Wnck.Version.MINOR_VERSION, Wnck.Version.MICRO_VERSION);
 			message ("Cairo version: %s", Cairo.version_string ());
 			message ("Pango version: %s", Pango.version_string ());
-#if HAVE_GTK_3_8
-			message ("+ Gtk+ FrameClock usage enabled");
-#endif
-#if HAVE_GTK_3_10
-			message ("+ Gtk+ CSD support enabled");
-#endif
 #if HAVE_HIDPI
 			message ("+ Cairo/Gtk+ HiDPI support enabled");
 #endif
@@ -272,8 +249,11 @@ namespace Plank.Factories
 			if (Gtk.Widget.get_default_direction () == Gtk.TextDirection.RTL)
 				message ("+ RTL support enabled");
 			
+			internal_quarks_initialize ();
+			environment_initialize ();
+			
 			// Make sure we are not doing silly things like trying to run in a wayland-session!
-			if (!(Gdk.Screen.get_default () is Gdk.X11.Screen)) {
+			if (!environment_is_session_type (XdgSessionType.X11)) {
 				critical ("Only X11 environments are supported.");
 				quit ();
 				return;
@@ -281,9 +261,10 @@ namespace Plank.Factories
 			
 			Paths.initialize (exec_name, build_pkg_data_dir);
 			WindowControl.initialize ();
+			DockletManager.get_default ().load_docklets ();
 			
 			initialize ();
-			create_controller ();
+			create_docks ();
 			create_actions ();
 		}
 		
@@ -295,14 +276,66 @@ namespace Plank.Factories
 		}
 		
 		/**
-		 * Creates the dock controller.
+		 * Creates the docks.
 		 */
-		protected virtual void create_controller ()
+		protected virtual void create_docks ()
 		{
-			controller = new DockController (Paths.AppConfigFolder.get_child (dock_name));
-			controller.initialize ();
+			if (dock_name != null && dock_name != "") {
+				message ("Running with 1 dock ('%s')", dock_name);
+				add_dock (create_dock (dock_name));
+				return;
+			}
 			
-			add_window (controller.window);
+			var settings = create_settings ("net.launchpad.plank");
+			var enabled_docks = settings.get_strv ("enabled-docks");
+			
+			// Allow up to 8 docks
+			if (enabled_docks.length <= 0) {
+				enabled_docks = { "dock1" };
+				settings.set_strv ("enabled-docks", enabled_docks);
+			} else if (enabled_docks.length > 8) {
+				enabled_docks = enabled_docks[0:8];
+				settings.set_strv ("enabled-docks", enabled_docks);
+			}
+			
+			message ("Running with %i docks ('%s')", enabled_docks.length, string.joinv ("', '", enabled_docks));
+			foreach (unowned string dock_name in enabled_docks)
+				add_dock (create_dock (dock_name));
+		}
+		
+		DockController create_dock (string dock_name)
+		{
+			var config_folder = Paths.AppConfigFolder.get_child (dock_name);
+			// Make sure our config-directory exists
+			Paths.ensure_directory_exists (config_folder);
+			
+			var dock = new DockController (dock_name, config_folder);
+			dock.initialize ();
+			
+			return dock;
+		}
+		
+		void add_dock (DockController dock)
+		{
+			// Make sure to populate our primary-dock field
+			if (primary_dock == null
+				|| (primary_dock.prefs.PinnedOnly && !dock.prefs.PinnedOnly))
+				primary_dock = dock;
+			
+			docks.add (dock);
+			add_window (dock.window);
+		}
+		
+		void remove_dock (DockController dock)
+		{
+			if (docks.size == 1)
+				return;
+			
+			remove_window (dock.window);
+			docks.remove (dock);
+			
+			if (primary_dock == dock)
+				primary_dock = docks[0];
 		}
 		
 		/**
@@ -314,19 +347,19 @@ namespace Plank.Factories
 			
 			action = new SimpleAction ("help", null);
 			action.activate.connect (() => {
-				Services.System.open_uri (help_url);
+				System.get_default ().open_uri (help_url);
 			});
 			add_action (action);
 			
 			action = new SimpleAction ("translate", null);
 			action.activate.connect (() => {
-				Services.System.open_uri (translate_url);
+				System.get_default ().open_uri (translate_url);
 			});
 			add_action (action);
 			
 			action = new SimpleAction ("preferences", null);
 			action.activate.connect (() => {
-				show_preferences ();
+				show_preferences (primary_dock);
 			});
 			add_action (action);
 			
@@ -366,7 +399,7 @@ namespace Plank.Factories
 			about_dlg = new Gtk.AboutDialog ();
 			about_dlg.window_position = Gtk.WindowPosition.CENTER;
 			about_dlg.gravity = Gdk.Gravity.CENTER;
-			about_dlg.set_transient_for (controller.window);
+			about_dlg.set_transient_for (primary_dock.window);
 			
 			about_dlg.set_program_name (exec_name);
 			about_dlg.set_version ("%s\n%s".printf (build_version, build_version_info));
@@ -385,6 +418,8 @@ namespace Plank.Factories
 				about_dlg.set_artists (about_artists);
 			if (about_translators != null && about_translators != "")
 				about_dlg.set_translator_credits (about_translators);
+			else
+				about_dlg.set_translator_credits (_("translator-credits"));
 			about_dlg.set_license_type (about_license_type);
 			
 			about_dlg.response.connect (() => {
@@ -401,16 +436,19 @@ namespace Plank.Factories
 		
 		/**
 		 * Displays the preferences dialog.
+		 *
+		 * @param controller the dock to show preferences for
 		 */
-		void show_preferences ()
-			requires (controller != null)
+		void show_preferences (DockController controller)
 		{
 			if (preferences_dlg != null) {
+				preferences_dlg.controller = controller;
+				preferences_dlg.set_transient_for (controller.window);
 				preferences_dlg.show ();
 				return;
 			}
 			
-			preferences_dlg = new PreferencesWindow (controller.prefs);
+			preferences_dlg = new PreferencesWindow (controller);
 			preferences_dlg.set_transient_for (controller.window);
 			
 			preferences_dlg.destroy.connect (() => {

@@ -17,9 +17,7 @@
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-using Plank.Services;
-
-namespace Plank.Items
+namespace Plank
 {
 	/**
 	 * A container and controller class for managing dock items.
@@ -87,19 +85,15 @@ namespace Plank.Items
 		{
 			bool result = false;
 			
-			unowned DockItem? hovered_item = null;
+			unowned DockItem? target_item = null;
 			unowned DockController? controller = get_dock ();
 			if (controller != null && controller.window.HoveredItemProvider == this) {
-				hovered_item = controller.window.HoveredItem;
-				if (hovered_item == null) {
-					var cursor = controller.renderer.local_cursor;
-					hovered_item = controller.position_manager.get_nearest_item_at (cursor.x, cursor.y, this);
-				}
+				target_item = controller.position_manager.get_current_target_item (this);
 			}
 			
 			foreach (var uri in uris) {
 				if (!item_exists_for_uri (uri)) {
-					add_item_with_uri (uri, hovered_item);
+					add_item_with_uri (uri, target_item);
 					result = true;
 				}
 			}
@@ -141,6 +135,28 @@ namespace Plank.Items
 		protected virtual void handle_item_deleted (DockItem item)
 		{
 			remove (item);
+		}
+		
+		/**
+		 * Get ordered array of dockitem-filenames handled by this provider
+		 *
+		 * @return an ordered array of strings containing all basenames
+		 */
+		public virtual string[] get_dockitem_filenames ()
+		{
+			var item_list = new Gee.ArrayList<string> ();
+			
+			foreach (var element in internal_elements) {
+				unowned DockItem? item = (element as DockItem);
+				if (item == null)
+					continue;
+				
+				var dock_item_filename = item.DockItemFilename;
+				if (dock_item_filename.length > 0)
+					item_list.add ((owned) dock_item_filename);
+			}
+			
+			return item_list.to_array ();
 		}
 	}
 }

@@ -17,9 +17,7 @@
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-using Plank.Services;
-
-namespace Plank.Drawing
+namespace Plank
 {
 	/**
 	 * Creates a new surface based on the given information
@@ -30,7 +28,7 @@ namespace Plank.Drawing
 	 * @param draw_data_func function which changes the surface
 	 * @return the newly created surface or NULL
 	 */
-	public delegate DockSurface? DrawFunc<G> (int width, int height, DockSurface model, DrawDataFunc<G>? draw_data_func);
+	public delegate Surface? DrawFunc<G> (int width, int height, Surface model, DrawDataFunc<G>? draw_data_func);
 	
 	/**
 	 * Creates a new surface using the given element and information
@@ -41,10 +39,10 @@ namespace Plank.Drawing
 	 * @param data the data object used for drawing
 	 * @return the newly created surface or NULL
 	 */
-	public delegate DockSurface? DrawDataFunc<G> (int width, int height, DockSurface model, G? data);
+	public delegate Surface? DrawDataFunc<G> (int width, int height, Surface model, G? data);
 	
 	/**
-	 * Controls some internal behaviors of a {@link Plank.Drawing.SurfaceCache}
+	 * Controls some internal behaviors of a {@link Plank.SurfaceCache}
 	 */
 	[Flags]
 	public enum SurfaceCacheFlags
@@ -76,6 +74,7 @@ namespace Plank.Drawing
 	{
 		const int64 MAX_CACHE_AGE = 5 * 60 * 1000 * 1000;
 		const int64 MIN_DRAWING_TIME = 10 * 1000;
+		const int64 INSANE_DRAWING_TIME = 30 * 1000;
 		const int64 ACCESS_REWARD = 500 * 1000;
 		
 		class SurfaceInfo
@@ -117,10 +116,10 @@ namespace Plank.Drawing
 			}
 		}
 		
-		public SurfaceCacheFlags flags { get; construct; }
+		public SurfaceCacheFlags flags { get; construct set; }
 		
 		Gee.TreeSet<unowned SurfaceInfo> infos;
-		Gee.HashMap<SurfaceInfo, DockSurface> cache_map;
+		Gee.HashMap<SurfaceInfo, Surface> cache_map;
 		unowned SurfaceInfo? last_info;
 		Mutex cache_mutex;
 		
@@ -133,13 +132,8 @@ namespace Plank.Drawing
 		
 		construct
 		{
-#if HAVE_GEE_0_8
 			infos = new Gee.TreeSet<unowned SurfaceInfo> ((CompareDataFunc) SurfaceInfo.compare);
-			cache_map = new Gee.HashMap<SurfaceInfo, DockSurface> ((Gee.HashDataFunc<SurfaceInfo>) SurfaceInfo.hash);
-#else
-			infos = new Gee.TreeSet<unowned SurfaceInfo> ((CompareFunc) SurfaceInfo.compare);
-			cache_map = new Gee.HashMap<SurfaceInfo, DockSurface> ((HashFunc<SurfaceInfo>) SurfaceInfo.hash);
-#endif
+			cache_map = new Gee.HashMap<SurfaceInfo, Surface> ((Gee.HashDataFunc<SurfaceInfo>) SurfaceInfo.hash);
 			last_info = null;
 			
 			//TODO Adaptive delay depending on the access rate
@@ -161,14 +155,14 @@ namespace Plank.Drawing
 			last_info = null;
 		}
 		
-		public DockSurface? get_surface<G> (int width, int height, DockSurface model, DrawFunc<G> draw_func, DrawDataFunc<G>? draw_data_func)
+		public Surface? get_surface<G> (int width, int height, Surface model, DrawFunc<G> draw_func, DrawDataFunc<G>? draw_data_func)
 			requires (width >= 0 && height >= 0)
 		{
 			cache_mutex.lock ();
 			
 			unowned SurfaceInfo? info;
 			SurfaceInfo? current_info = null;
-			DockSurface? surface = null;
+			Surface? surface = null;
 			bool needs_scaling = false;
 			
 			info = find_match ((uint16) width, (uint16) height, out needs_scaling);
@@ -194,6 +188,15 @@ namespace Plank.Drawing
 			
 			var finish_time = GLib.get_monotonic_time ();
 			var time_elapsed = finish_time - access_time;
+			
+			// FIXME There is probably a nicer way to accomplish this
+			// Mark the created surface if drawing-time exceeded our limit and have
+			// an upper drawing-layer (e.g. DockRenderer) handle it
+			if (time_elapsed >= INSANE_DRAWING_TIME && flags == SurfaceCacheFlags.NONE) {
+				warning ("Creating surface took WAY TOO LONG (%lldms), enabled downscaling for this cache!", time_elapsed / 1000);
+				flags = SurfaceCacheFlags.ALLOW_DOWNSCALE;
+				surface.set_qdata<string> (quark_surface_stats, SURFACE_STATS_DRAWING_TIME_EXCEEDED);
+			}
 			
 			current_info = new SurfaceInfo ((uint16) width, (uint16) height, finish_time, time_elapsed);
 			current_info.access_count++;

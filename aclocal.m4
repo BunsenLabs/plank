@@ -1226,6 +1226,7 @@ AC_DEFUN([AM_PROG_VALAC],
 
 m4_include([m4/gcov.m4])
 m4_include([m4/gmock.m4])
+m4_include([m4/gsettings.m4])
 m4_include([m4/intltool.m4])
 m4_include([m4/libtool.m4])
 m4_include([m4/ltoptions.m4])

@@ -17,12 +17,7 @@
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-using Plank.Factories;
-using Plank.Items;
-using Plank.Services;
-using Plank.Services.Windows;
-
-namespace Plank.Widgets
+namespace Plank
 {
 	/**
 	 * The main window for all docks.
@@ -59,11 +54,6 @@ namespace Plank.Widgets
 		 */
 		Gtk.Menu? menu;
 		
-		/**
-		 * The tooltip window for this dock.
-		 */
-		HoverWindow hover;
-		
 		uint hover_reposition_timer_id = 0U;
 		
 		uint long_press_timer_id = 0U;
@@ -72,7 +62,8 @@ namespace Plank.Widgets
 
 		Gdk.Rectangle input_rect;
 		int requested_x;
-		int requested_y;		
+		int requested_y;
+		int window_position_retry = 0;
 		
 		/**
 		 * Creates a new dock window.
@@ -96,9 +87,8 @@ namespace Plank.Widgets
 						Gdk.EventMask.ENTER_NOTIFY_MASK |
 						Gdk.EventMask.LEAVE_NOTIFY_MASK |
 						Gdk.EventMask.POINTER_MOTION_MASK |
-						Gdk.EventMask.SCROLL_MASK);
-			
-			hover = new HoverWindow ();
+						Gdk.EventMask.SCROLL_MASK |
+						Gdk.EventMask.STRUCTURE_MASK);
 			
 			controller.prefs.notify["HideMode"].connect (set_struts);
 		}
@@ -221,7 +211,7 @@ namespace Plank.Widgets
 				set_hovered_provider (null);
 				set_hovered (null);
 			} else
-				hover.hide ();
+				controller.hover.hide ();
 			
 			return Gdk.EVENT_STOP;
 		}
@@ -289,6 +279,27 @@ namespace Plank.Widgets
 		/**
 		 * {@inheritDoc}
 		 */
+		public override bool configure_event (Gdk.EventConfigure event)
+		{
+			var win_rect = controller.position_manager.get_dock_window_region ();
+			var needs_update = (win_rect.width != event.width || win_rect.height != event.height
+				|| win_rect.x != event.x || win_rect.y != event.y);
+			
+			if (needs_update) {
+				if (++window_position_retry < 3) {
+					critical ("Retry #%i update_size_and_position() to force requested values!", window_position_retry);
+					update_size_and_position ();
+				}
+			} else {
+				window_position_retry = 0;
+			}
+			
+			return base.configure_event (event);
+		}
+		
+		/**
+		 * {@inheritDoc}
+		 */
 		public override bool draw (Cairo.Context cr)
 		{
 			set_input_mask ();
@@ -343,9 +354,14 @@ namespace Plank.Widgets
 				hover_reposition_timer_id = 0U;
 			}
 			
-			hover.hide ();
+			if (controller.drag_manager.ExternalDragActive)
+				return;
 			
-			if (HoveredItem == null || controller.drag_manager.InternalDragActive)
+			controller.hover.hide ();
+			
+			if (HoveredItem == null
+				|| !controller.prefs.TooltipsEnabled
+				|| controller.drag_manager.InternalDragActive)
 				return;
 			
 			// don't be that demanding this delay is still fast enough
@@ -361,6 +377,7 @@ namespace Plank.Widgets
 					return true;
 				
 				hover_reposition_timer_id = 0U;
+				unowned HoverWindow hover = controller.hover;
 				
 				int x, y;
 				hover.set_text (HoveredItem.Text);
@@ -604,11 +621,7 @@ namespace Plank.Widgets
 			menu.show.connect (on_menu_show);
 			menu.hide.connect (on_menu_hide);
 			
-#if HAVE_GEE_0_8
 			var iterator = menu_items.bidir_list_iterator ();
-#else
-			var iterator = menu_items.list_iterator ();
-#endif
 			if (controller.prefs.Position == Gtk.PositionType.TOP) {
 				iterator.last ();
 				do {
@@ -641,13 +654,13 @@ namespace Plank.Widgets
 			
 			menu_item = new Gtk.MenuItem.with_mnemonic ("Open config folder");
 			menu_item.activate.connect (() => {
-				Services.System.open (controller.config_folder);
+				System.get_default ().open (controller.config_folder);
 			});
 			debug_items.add (menu_item);
 			
 			menu_item = new Gtk.MenuItem.with_mnemonic ("Open current theme file");
 			menu_item.activate.connect (() => {
-				Services.System.open (controller.renderer.theme.get_backing_file ());
+				System.get_default ().open (controller.renderer.theme.get_backing_file ());
 			});
 			debug_items.add (menu_item);
 			
@@ -674,14 +687,14 @@ namespace Plank.Widgets
 			
 			menu_item = new Gtk.MenuItem.with_mnemonic ("Open dockitem file");
 			menu_item.activate.connect (() => {
-				Services.System.open (dock_item_file);
+				System.get_default ().open (dock_item_file);
 			});
 			menu_item.sensitive = (dock_item_file != null && dock_item_file.query_exists ());
 			debug_items.add (menu_item);
 			
 			menu_item = new Gtk.MenuItem.with_mnemonic ("Open launcher file");
 			menu_item.activate.connect (() => {
-				Services.System.open (File.new_for_uri (item.Launcher));
+				System.get_default ().open (File.new_for_uri (item.Launcher));
 			});
 			menu_item.sensitive = (item.Launcher != "");
 			debug_items.add (menu_item);
@@ -709,7 +722,7 @@ namespace Plank.Widgets
 		void on_menu_show ()
 		{
 			update_icon_regions ();
-			hover.hide ();
+			controller.hover.hide ();
 			controller.renderer.animated_draw ();
 		}
 		

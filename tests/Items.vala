@@ -17,10 +17,9 @@
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-using Plank.Drawing;
-using Plank.Items;
+using Plank;
 
-namespace Plank.Tests
+namespace PlankTests
 {
 	public static void register_items_tests ()
 	{
@@ -71,12 +70,12 @@ namespace Plank.Tests
 		assert (item.unique_id () != "");
 		assert (item.unique_id () != item2.unique_id ());
 		
-		var icon = item.get_surface_copy (111, 111, new DockSurface (1, 1));
+		var icon = item.get_surface_copy (111, 111, new Surface (1, 1));
 		assert (icon != null);
 		assert (icon.Width == 111);
 		assert (icon.Height == 111);
 		
-		var icon2 = item.get_surface_copy (111, 111, new DockSurface (1, 1));
+		var icon2 = item.get_surface_copy (111, 111, new Surface (1, 1));
 		assert (icon != null);
 		assert (icon2 != null);
 		assert (icon != icon2);
@@ -90,7 +89,7 @@ namespace Plank.Tests
 		
 		item = new FileDockItem.with_file (File.new_for_path (Config.DATA_DIR + "/test.desktop"));
 		
-		var icon = item.get_surface_copy (64, 64, new DockSurface (1, 1));
+		var icon = item.get_surface_copy (64, 64, new Surface (1, 1));
 		assert (icon != null);
 		assert (icon.Width == 64);
 		assert (icon.Height == 64);

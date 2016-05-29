@@ -17,32 +17,20 @@
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-using Plank.Factories;
-using Plank.Services;
-using Plank.Services.Windows;
-
-namespace Plank.Items
+namespace Plank
 {
 	/**
 	 * A container and controller class for managing application dock items on a dock.
 	 */
-	public class ApplicationDockItemProvider : DockItemProvider
+	public class ApplicationDockItemProvider : DockItemProvider, UnityClient
 	{
-		static DBusConnection connection = null;
-		static uint unity_bus_id = 0U;
-		
 		public signal void item_window_added (ApplicationDockItem item);
 		
 		public File LaunchersDir { get; construct; }
 		
-		bool handles_transients;
-		
 		FileMonitor? items_monitor = null;
 		bool delay_items_monitor_handle = false;
 		Gee.ArrayList<GLib.File> queued_files;
-		
-		uint launcher_entry_dbus_signal_id = 0U;
-		uint dbus_name_owner_changed_signal_id = 0U;
 		
 		/**
 		 * Creates a new container for dock items.
@@ -56,8 +44,6 @@ namespace Plank.Items
 		
 		construct
 		{
-			handles_transients = (this is DefaultApplicationDockItemProvider);
-			
 			queued_files = new Gee.ArrayList<GLib.File> ();
 			
 			// Make sure our launchers-directory exists
@@ -70,17 +56,6 @@ namespace Plank.Items
 				items_monitor.changed.connect (handle_items_dir_changed);
 			} catch (Error e) {
 				critical ("Unable to watch the launchers directory. (%s)", e.message);
-			}
-			
-			acquire_unity_dbus ();
-			
-			if (connection != null) {
-				debug ("Unity: Initalizing LauncherEntry support");
-				
-				launcher_entry_dbus_signal_id = connection.signal_subscribe (null, "com.canonical.Unity.LauncherEntry",
-					null, null, null, DBusSignalFlags.NONE, (DBusSignalCallback) handle_entry_signal);
-				dbus_name_owner_changed_signal_id = connection.signal_subscribe ("org.freedesktop.DBus", "org.freedesktop.DBus",
-					"NameOwnerChanged", "/org/freedesktop/DBus", null, DBusSignalFlags.NONE, (DBusSignalCallback) handle_name_owner_changed);
 			}
 		}
 		
@@ -95,83 +70,6 @@ namespace Plank.Items
 				items_monitor.cancel ();
 				items_monitor = null;
 			}
-			
-			if (unity_bus_id > 0U)
-				Bus.unown_name (unity_bus_id);
-			
-			if (connection != null) {
-				if (launcher_entry_dbus_signal_id > 0U)
-					connection.signal_unsubscribe (launcher_entry_dbus_signal_id);
-				if (dbus_name_owner_changed_signal_id > 0U)
-					connection.signal_unsubscribe (dbus_name_owner_changed_signal_id);
-			}
-		}
-		
-		static construct
-		{
-			acquire_unity_dbus ();
-		}
-		
-		/**
-		 * Connect DBus connection and try to aquire unity busname
-		 */
-		public static void acquire_unity_dbus ()
-		{
-			// Initialize Unity DBus
-			try {
-				if (connection == null)
-					connection = Bus.get_sync (BusType.SESSION, null);
-			} catch (Error e) {
-				warning (e.message);
-				return;
-			}
-			
-			if (unity_bus_id == 0U) {
-				// Acquire Unity bus-name to activate libunity clients since normally there shouldn't be a running Unity
-				unity_bus_id = Bus.own_name (BusType.SESSION, "com.canonical.Unity", BusNameOwnerFlags.ALLOW_REPLACEMENT,
-					(BusAcquiredCallback) handle_bus_acquired, (BusNameAcquiredCallback) handle_name_acquired,
-					(BusNameLostCallback) handle_name_lost);
-			}
-		}
-		
-		/**
-		 * Disconnect DBus connection and release unity busname
-		 */
-		public static void release_unity_dbus ()
-		{
-			if (unity_bus_id > 0U) {
-				Bus.unown_name (unity_bus_id);
-				unity_bus_id = 0U;
-			}
-			
-			if (connection != null) {
-				try {
-					connection.flush_sync ();
-					connection.close_sync ();
-				} catch (Error e) {
-					warning (e.message);
-				} finally {
-					connection = null;
-				}
-			}
-		}
-		
-		static void handle_bus_acquired (DBusConnection conn, string name)
-		{
-			// Nothing here since we just want to provide this bus without any functionality
-		}
-
-		static void handle_name_acquired (DBusConnection conn, string name)
-		{
-			debug ("Unity: %s acquired", name);
-		}
-
-		static void handle_name_lost (DBusConnection conn, string name)
-		{
-			if (conn == null)
-				warning ("Unity: %s failed", name);
-			else
-				debug ("Unity: %s lost", name);
 		}
 		
 		protected unowned ApplicationDockItem? item_for_application (Bamf.Application app)
@@ -275,13 +173,12 @@ namespace Plank.Items
 		}
 		
 		/**
-		 * Serializes the dockitem-filenames
-		 *
-		 * @return string containing all filesnames separated by ';;'
+		 * {@inheritDoc}
 		 */
-		public string get_item_list_string ()
+		public override string[] get_dockitem_filenames ()
 		{
-			string? item_list = null;
+			var item_list = new Gee.ArrayList<string> ();
+			
 			foreach (var element in internal_elements) {
 				unowned DockItem? item = (element as DockItem);
 				if (item == null || (item is TransientDockItem))
@@ -289,17 +186,11 @@ namespace Plank.Items
 				
 				var dock_item_filename = item.DockItemFilename;
 				if (dock_item_filename.length > 0) {
-					if (item_list != null)
-						item_list = "%s;;%s".printf (item_list, dock_item_filename);
-					else
-						item_list = (owned) dock_item_filename;
+					item_list.add ((owned) dock_item_filename);
 				}
 			}
 			
-			if (item_list == null)
-				return "";
-			
-			return item_list;
+			return item_list.to_array ();
 		}
 		
 		protected virtual void app_opened (Bamf.Application app)
@@ -310,11 +201,6 @@ namespace Plank.Items
 			unowned ApplicationDockItem? found = item_for_application (app);
 			if (found != null)
 				found.App = app;
-		}
-		
-		bool file_is_dockitem (FileInfo info)
-		{
-			return !info.get_is_hidden () && info.get_name ().has_suffix (".dockitem");
 		}
 		
 		protected void delay_items_monitor ()
@@ -373,12 +259,8 @@ namespace Plank.Items
 			if (event != FileMonitorEvent.CREATED)
 				return;
 			
-			try {
-				if (!file_is_dockitem (f.query_info (FileAttribute.STANDARD_NAME + "," + FileAttribute.STANDARD_IS_HIDDEN, 0)))
-					return;
-			} catch {
+			if (!file_is_dockitem (f))
 				return;
-			}
 			
 			// bail if an item already manages this dockitem-file
 			foreach (var element in internal_elements) {
@@ -420,34 +302,15 @@ namespace Plank.Items
 			item_window_added (item);
 		}
 		
-		[CCode (instance_pos = -1)]
-		void handle_entry_signal (DBusConnection connection, string sender_name, string object_path,
-			string interface_name, string signal_name, Variant parameters)
+		public void remove_launcher_entry (string sender_name)
 		{
-			if (parameters == null || signal_name == null || sender_name == null)
-				return;
-			
-			if (signal_name == "Update")
-				handle_update_request (sender_name, parameters);
-		}
-		
-		[CCode (instance_pos = -1)]
-		void handle_name_owner_changed (DBusConnection connection, string sender_name, string object_path,
-			string interface_name, string signal_name, Variant parameters)
-		{
-			string name, before, after;
-			parameters.get ("(sss)", out name, out before, out after);
-			
-			if (after != null && after != "")
-				return;
-			
 			// Reset item since there is no new NameOwner
 			foreach (var item in internal_elements) {
 				unowned ApplicationDockItem? app_item = item as ApplicationDockItem;
 				if (app_item == null)
 					continue;
 				
-				if (app_item.get_unity_dbusname () != name)
+				if (app_item.get_unity_dbusname () != sender_name)
 					continue;
 				
 				app_item.unity_reset ();
@@ -457,20 +320,13 @@ namespace Plank.Items
 				unowned TransientDockItem? transient_item = item as TransientDockItem;
 				if (transient_item != null && transient_item.App == null)
 					remove (transient_item);
-				else
-					states_changed ();
 				
 				break;
 			}
 		}
 		
-		void handle_update_request (string sender_name, Variant parameters, bool is_retry = false)
+		public void update_launcher_entry (string sender_name, Variant parameters, bool is_retry = false)
 		{
-			if (!parameters.is_of_type (new VariantType ("(sa{sv})"))) {
-				warning ("Unity.handle_update_request (illegal payload signature '%s' from %s. expected '(sa{sv})')", parameters.get_type_string (), sender_name);
-				return;
-			}
-			
 			string app_uri;
 			VariantIter prop_iter;
 			parameters.get ("(sa{sv})", out app_uri, out prop_iter);
@@ -507,8 +363,6 @@ namespace Plank.Items
 				if (transient_item != null && transient_item.App == null
 					&& !(transient_item.has_unity_info ()))
 					remove (transient_item);
-				else
-					states_changed ();
 				
 				return;
 			}
@@ -517,14 +371,15 @@ namespace Plank.Items
 				// Wait to let further update requests come in to catch the case where one application
 				// sends out multiple LauncherEntry-updates with different application-uris, e.g. Nautilus
 				Idle.add (() => {
-					handle_update_request (sender_name, parameters, true);
+					update_launcher_entry (sender_name, parameters, true);
 					return false;
 				});
 				
 				return;
 			}
 			
-			if (handles_transients) {
+			unowned DefaultApplicationDockItemProvider? provider = (this as DefaultApplicationDockItemProvider);
+			if (provider != null && !provider.Prefs.PinnedOnly) {
 				// Find a matching desktop-file and create new TransientDockItem for this LauncherEntry
 				var desktop_file = desktop_file_for_application_uri (app_uri);
 				if (desktop_file != null) {

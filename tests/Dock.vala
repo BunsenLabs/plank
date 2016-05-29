@@ -17,9 +17,9 @@
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-using Plank.Factories;
+using Plank;
 
-namespace Plank.Tests
+namespace PlankTests
 {
 	public class Dock : AbstractMain
 	{
@@ -27,6 +27,7 @@ namespace Plank.Tests
 		{
 			var application = new Dock ();
 			Factory.init (application, new ItemFactory ());
+			Timeout.add (5000, (SourceFunc) application.quit);
 			return application.run (args);
 		}
 		
@@ -70,14 +71,5 @@ namespace Plank.Tests
 				about_license_type : Gtk.License.GPL_3_0
 			);
 		}
-		
-		public override void activate ()
-		{
-			base.activate ();
-			
-			set_inactivity_timeout (5000);
-			release ();
-		}
-		
 	}
 }

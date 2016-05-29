@@ -16,12 +16,12 @@
         <img class="main_diagram" usemap="#Plank.DockRenderer" alt="Object hierarchy for DockRenderer" src="img/Plank.DockRenderer.png"/>
 
       <map id="Plank.DockRenderer" name="Plank.DockRenderer">
-<area shape="rect" id="node1" href="Plank.DockRenderer.html" title="Plank.DockRenderer" alt="" coords="55,197,229,245"/>
-<area shape="rect" id="node2" href="Plank.Drawing.AnimatedRenderer.html" title="Plank.Drawing.AnimatedRenderer" alt="" coords="5,101,279,149"/>
+<area shape="rect" id="node1" href="Plank.DockRenderer.html" title="Plank.DockRenderer" alt="" coords="5,197,179,245"/>
+<area shape="rect" id="node2" href="Plank.Renderer.html" title="Plank.Renderer" alt="" coords="25,101,159,149"/>
 </map>
 
         <h2 class="main_title">Description:</h2>
-        <div class="main_code_definition"><span class="main_keyword">public</span> <span class="main_keyword">class</span> <b><span class="class">DockRenderer</span></b> : <span class="main_type"><a href="Plank.Drawing.AnimatedRenderer.html" class="abstract_class">AnimatedRenderer</a></span>
+        <div class="main_code_definition"><span class="main_keyword">public</span> <span class="main_keyword">class</span> <b><span class="class">DockRenderer</span></b> : <span class="main_type"><a href="Plank.Renderer.html" class="abstract_class">Renderer</a></span>
         </div>
         <div class="description">
           <p>Handles all of the drawing for a dock.</p>
@@ -37,7 +37,7 @@
             </span>
             <div class="leaf_brief_description">
             </div></li>
-          <li class="property"><span class="leaf_code_definition"><span class="main_keyword">public</span> <span class="main_type"><a href="Plank.Drawing.DockTheme.html" class="class">DockTheme</a></span> <b><a href="Plank.DockRenderer.theme.html" class="property">theme</a></b> { <span class="main_keyword">get</span>; }
+          <li class="property"><span class="leaf_code_definition"><span class="main_keyword">public</span> <span class="main_type"><a href="Plank.DockTheme.html" class="class">DockTheme</a></span> <b><a href="Plank.DockRenderer.theme.html" class="property">theme</a></b> { <span class="main_keyword">get</span>; }
             </span>
             <div class="leaf_brief_description">
             </div></li>
@@ -86,7 +86,7 @@
             </span>
             <div class="leaf_brief_description">
             </div></li>
-          <li class="method"><span class="leaf_code_definition"><span class="main_keyword">public</span> <span class="main_keyword">void</span> <b><a href="Plank.DockRenderer.animate_items.html" class="method">animate_items</a></b> (<span class="main_type"><span class="interface">List</span></span>&lt;<span class="main_type"><a href="Plank.Items.DockElement.html" class="abstract_class">DockElement</a></span>&gt; elements)
+          <li class="method"><span class="leaf_code_definition"><span class="main_keyword">public</span> <span class="main_keyword">void</span> <b><a href="Plank.DockRenderer.animate_items.html" class="method">animate_items</a></b> (<span class="main_type"><span class="interface">List</span></span>&lt;<span class="main_type"><a href="Plank.DockElement.html" class="abstract_class">DockElement</a></span>&gt; elements)
             </span>
             <div class="leaf_brief_description">
             </div></li>
@@ -97,93 +97,89 @@
         </ul>
         <h3 class="main_title">Inherited Members:</h3>
         <div class="box">
-          <div class="headline">
-            <div class="text">All known members inherited from class Plank.Drawing.AnimatedRenderer</div>
-            <div class="toggle">
-              <img onclick="toggle_box  (this, 'box-content-6')" src="coll_open.png">&nbsp;</div>
+          <div class="headline" onclick="toggle_box (this, 'box-content-6')">All known members inherited from class Plank.Renderer</div>
+          <div class="content" id="box-content-6">
+            <div class="column">
+              <ul class="navi_inline">
+                <li class="property"><a href="Plank.Renderer.widget.html">widget</a></li>
+                <li class="property"><a href="Plank.Renderer.frame_time.html">frame_time</a></li>
+                <li class="abstract_method"><a href="Plank.Renderer.animation_needed.html">animation_needed</a></li>
+              </ul>
             </div>
-            <div class="content" id="box-content-6">
-              <div class="column">
-                <ul class="navi_inline">
-                  <li class="property"><a href="Plank.Drawing.AnimatedRenderer.widget.html">widget</a></li>
-                  <li class="property"><a href="Plank.Drawing.AnimatedRenderer.frame_time.html">frame_time</a></li>
-                  <li class="abstract_method"><a href="Plank.Drawing.AnimatedRenderer.animation_needed.html">animation_needed</a></li>
-                </ul>
-              </div>
-              <div class="column">
-                <ul class="navi_inline">
-                  <li class="abstract_method"><a href="Plank.Drawing.AnimatedRenderer.initialize_frame.html">initialize_frame</a></li>
-                  <li class="abstract_method"><a href="Plank.Drawing.AnimatedRenderer.draw.html">draw</a></li>
-                </ul>
-              </div>
-              <div class="column">
-                <ul class="navi_inline">
-                  <li class="method"><a href="Plank.Drawing.AnimatedRenderer.force_frame_time_update.html">force_frame_time_update</a></li>
-                  <li class="method"><a href="Plank.Drawing.AnimatedRenderer.animated_draw.html">animated_draw</a></li>
-                </ul>
-              </div>
+            <div class="column">
+              <ul class="navi_inline">
+                <li class="abstract_method"><a href="Plank.Renderer.initialize_frame.html">initialize_frame</a></li>
+                <li class="abstract_method"><a href="Plank.Renderer.draw.html">draw</a></li>
+              </ul>
+            </div>
+            <div class="column">
+              <ul class="navi_inline">
+                <li class="method"><a href="Plank.Renderer.force_frame_time_update.html">force_frame_time_update</a></li>
+                <li class="method"><a href="Plank.Renderer.animated_draw.html">animated_draw</a></li>
+              </ul>
             </div>
           </div>
-          <div class="box">
-            <div class="headline">
-              <div class="text">All known members inherited from class GLib.Object</div>
-              <div class="toggle">
-                <img onclick="toggle_box  (this, 'box-content-7')" src="coll_open.png">&nbsp;</div>
-              </div>
-              <div class="content" id="box-content-7">
-                <div class="column">
-                  <ul class="navi_inline">
-                    <li class="static_method">@new</li>
-                    <li class="static_method">newv</li>
-                    <li class="static_method">new_valist</li>
-                    <li class="method">get_type</li>
-                    <li class="method">get_class</li>
-                    <li class="method">@ref</li>
-                    <li class="method">unref</li>
-                    <li class="method">ref_sink</li>
-                    <li class="method">weak_ref</li>
-                    <li class="method">weak_unref</li>
-                    <li class="method">add_weak_pointer</li>
-                    <li class="method">remove_weak_pointer</li>
-                  </ul>
-                </div>
-                <div class="column">
-                  <ul class="navi_inline">
-                    <li class="method">@get</li>
-                    <li class="method">@set</li>
-                    <li class="method">get_property</li>
-                    <li class="method">set_property</li>
-                    <li class="method">get_data</li>
-                    <li class="method">set_data</li>
-                    <li class="method">set_data_full</li>
-                    <li class="method">steal_data</li>
-                    <li class="method">get_qdata</li>
-                    <li class="method">set_qdata</li>
-                    <li class="method">set_qdata_full</li>
-                    <li class="method">steal_qdata</li>
-                  </ul>
-                </div>
-                <div class="column">
-                  <ul class="navi_inline">
-                    <li class="method">freeze_notify</li>
-                    <li class="method">thaw_notify</li>
-                    <li class="virtual_method">dispose</li>
-                    <li class="virtual_method">constructed</li>
-                    <li class="method">notify_property</li>
-                    <li class="method">connect</li>
-                    <li class="method">disconnect</li>
-                    <li class="method">add_toggle_ref</li>
-                    <li class="method">remove_toggle_ref</li>
-                    <li class="method">bind_property</li>
-                    <li class="signal">notify</li>
-                    <li class="field">ref_count</li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div><br/>
-        <div class="site_footer">Generated by <a href="http://www.valadoc.org/">Valadoc</a>
         </div>
-      </body>
-    </html>
+        <div class="box">
+          <div class="headline" onclick="toggle_box (this, 'box-content-7')">All known members inherited from class GLib.Object</div>
+          <div class="content" id="box-content-7">
+            <div class="column">
+              <ul class="navi_inline">
+                <li class="static_method">@new</li>
+                <li class="static_method">new_valist</li>
+                <li class="static_method">newv</li>
+                <li class="method">add_toggle_ref</li>
+                <li class="method">add_weak_pointer</li>
+                <li class="method">bind_property</li>
+                <li class="method">connect</li>
+                <li class="virtual_method">constructed</li>
+                <li class="method">disconnect</li>
+                <li class="virtual_method">dispose</li>
+                <li class="method">dup_data</li>
+                <li class="method">dup_qdata</li>
+                <li class="method">freeze_notify</li>
+                <li class="method">@get</li>
+              </ul>
+            </div>
+            <div class="column">
+              <ul class="navi_inline">
+                <li class="method">get_class</li>
+                <li class="method">get_data</li>
+                <li class="method">get_property</li>
+                <li class="method">get_qdata</li>
+                <li class="method">get_type</li>
+                <li class="method">notify_property</li>
+                <li class="method">@ref</li>
+                <li class="method">ref_sink</li>
+                <li class="method">replace_data</li>
+                <li class="method">replace_qdata</li>
+                <li class="method">remove_toggle_ref</li>
+                <li class="method">remove_weak_pointer</li>
+                <li class="method">@set</li>
+              </ul>
+            </div>
+            <div class="column">
+              <ul class="navi_inline">
+                <li class="method">set_data</li>
+                <li class="method">set_data_full</li>
+                <li class="method">set_property</li>
+                <li class="method">set_qdata</li>
+                <li class="method">set_qdata_full</li>
+                <li class="method">steal_data</li>
+                <li class="method">steal_qdata</li>
+                <li class="method">thaw_notify</li>
+                <li class="method">unref</li>
+                <li class="method">weak_ref</li>
+                <li class="method">weak_unref</li>
+                <li class="signal">notify</li>
+                <li class="field">ref_count</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div><br/>
+    <div class="site_footer">Generated by <a href="http://www.valadoc.org/">Valadoc</a>
+    </div>
+  </body>
+</html>

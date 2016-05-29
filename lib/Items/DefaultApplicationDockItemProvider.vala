@@ -17,12 +17,7 @@
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-
-using Plank.Factories;
-using Plank.Services;
-using Plank.Services.Windows;
-
-namespace Plank.Items
+namespace Plank
 {
 	/**
 	 * The default container and controller class for managing application dock items on a dock.
@@ -46,6 +41,7 @@ namespace Plank.Items
 		construct
 		{
 			Prefs.notify["CurrentWorkspaceOnly"].connect (handle_setting_changed);
+			Prefs.notify["PinnedOnly"].connect (handle_pinned_only_changed);
 			
 			current_workspace_only = Prefs.CurrentWorkspaceOnly;
 			
@@ -56,6 +52,7 @@ namespace Plank.Items
 		~DefaultApplicationDockItemProvider ()
 		{
 			Prefs.notify["CurrentWorkspaceOnly"].disconnect (handle_setting_changed);
+			Prefs.notify["PinnedOnly"].disconnect (handle_pinned_only_changed);
 			
 			if (current_workspace_only)
 				disconnect_wnck ();
@@ -85,23 +82,8 @@ namespace Plank.Items
 		 */
 		public override void prepare ()
 		{
-			var transient_items = new Gee.ArrayList<DockElement> ();
-			
-			// Match running applications to their available dock-items
-			foreach (var app in Matcher.get_default ().active_launchers ()) {
-				unowned ApplicationDockItem? found = item_for_application (app);
-				if (found != null) {
-					found.App = app;
-					continue;
-				}
-				
-				if (!app.is_user_visible ())
-					continue;
-				
-				transient_items.add (new TransientDockItem.with_application (app));
-			}
-			
-			add_all (transient_items);
+			if (!Prefs.PinnedOnly)
+				add_transient_items ();
 			
 			var favs = new Gee.ArrayList<string> ();
 			
@@ -121,6 +103,9 @@ namespace Plank.Items
 				found.App = app;
 				return;
 			}
+			
+			if (Prefs.PinnedOnly)
+				return;
 			
 			var new_item = new TransientDockItem.with_application (app);
 			
@@ -198,6 +183,47 @@ namespace Plank.Items
 			update_visible_elements ();
 		}
 		
+		void handle_pinned_only_changed ()
+		{
+			if (Prefs.PinnedOnly)
+				remove_transient_items ();
+			else
+				add_transient_items ();
+		}
+		
+		void add_transient_items ()
+		{
+			var transient_items = new Gee.ArrayList<DockElement> ();
+			
+			// Match running applications to their available dock-items
+			foreach (var app in Matcher.get_default ().active_launchers ()) {
+				unowned ApplicationDockItem? found = item_for_application (app);
+				if (found != null) {
+					found.App = app;
+					continue;
+				}
+				
+				if (!app.is_user_visible ())
+					continue;
+				
+				transient_items.add (new TransientDockItem.with_application (app));
+			}
+			
+			add_all (transient_items);
+		}
+		
+		void remove_transient_items ()
+		{
+			var transient_items = new Gee.ArrayList<DockElement> ();
+			
+			foreach (var element in internal_elements) {
+				if (element is TransientDockItem)
+					transient_items.add (element);
+			}
+			
+			remove_all (transient_items);
+		}
+		
 		protected override void connect_element (DockElement element)
 		{
 			base.connect_element (element);
@@ -226,7 +252,7 @@ namespace Plank.Items
 			if (item is ApplicationDockItem)
 				app = ((ApplicationDockItem) item).App;
 			
-			if (app == null || !app.is_running ()) {
+			if (app == null || !app.is_running () || Prefs.PinnedOnly) {
 				remove (item);
 				return;
 			}

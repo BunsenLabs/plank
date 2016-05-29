@@ -1,9 +1,32 @@
-plank (0.10.1-1.1) jessie-backports; urgency=medium
+plank (0.11.1-1.1) jessie-backports; urgency=medium
 
   * Non-maintainer upload.
-  * Build for jessie-backports
+  * Build for jessie-backports on BunsenLabs.
 
- -- Jens John <dev@2ion.de>  Thu, 03 Dec 2015 12:53:15 +0100
+ -- Jens John <dev@2ion.de>  Sat, 30 Apr 2016 06:39:36 +0200
+
+plank (0.11.1-1) unstable; urgency=medium
+
+  * New upstream release.
+
+ -- Rico Tzschichholz <ricotz@ubuntu.com>  Wed, 30 Mar 2016 09:23:52 +0200
+
+plank (0.11.0-1) unstable; urgency=medium
+
+  [ Rico Tzschichholz ]
+  * New upstream release.
+  * debian/{control,rules}:
+    + Follow soname bump and bump build-deps accordingly.
+  * debian/*.install:
+    + Install new files.
+
+  [ Mike Gabriel ]
+  * debian/control:
+    + Bump Standards: to 3.9.7. No changes needed.
+  * debian/copyright:
+    + Move license texts to the end of the copyright file.
+
+ -- Mike Gabriel <sunweaver@debian.org>  Tue, 15 Mar 2016 11:54:29 +0100
 
 plank (0.10.1-1) unstable; urgency=medium
 

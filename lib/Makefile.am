@@ -20,8 +20,6 @@ AM_VALAFLAGS = \
 	$(NULL)
 
 BUILT_SOURCES = \
-	libplank_internal_la_vala.stamp \
-	libplank_la_vala.stamp \
 	plank.h \
 	plank-resources.c \
 	$(NULL)
@@ -70,12 +68,15 @@ libplank_la_VALASOURCES = \
 	PositionManager.vala \
 	DBus/Client.vala \
 	DBus/Interfaces.vala \
-	Drawing/AnimatedRenderer.vala \
+	Docklets/Docklet.vala \
+	Docklets/DockletItem.vala \
+	Docklets/DockletManager.vala \
 	Drawing/Color.vala \
 	Drawing/DrawingService.vala \
-	Drawing/DockSurface.vala \
 	Drawing/DockTheme.vala \
 	Drawing/Easing.vala \
+	Drawing/Renderer.vala \
+	Drawing/Surface.vala \
 	Drawing/SurfaceCache.vala \
 	Drawing/Theme.vala \
 	Factories/AbstractMain.vala \
@@ -86,6 +87,7 @@ libplank_la_VALASOURCES = \
 	Items/DefaultApplicationDockItemProvider.vala \
 	Items/DockContainer.vala \
 	Items/DockItem.vala \
+	Items/DockItemDrawValue.vala \
 	Items/DockItemProvider.vala \
 	Items/DockItemPreferences.vala \
 	Items/DockElement.vala \
@@ -94,10 +96,14 @@ libplank_la_VALASOURCES = \
 	Items/PlaceholderDockItem.vala \
 	Items/PlankDockItem.vala \
 	Items/TransientDockItem.vala \
+	Services/Environment.vala \
+	Services/EnvironmentSettings.vala \
 	Services/Logger.vala \
 	Services/Paths.vala \
 	Services/Preferences.vala \
+	Services/Settings.vala \
 	Services/System.vala \
+	Services/Unity.vala \
 	Services/Worker.vala \
 	Widgets/CompositedWindow.vala \
 	Widgets/DockWindow.vala \
@@ -121,6 +127,7 @@ plank-resources.c: $(top_srcdir)/data/plank.gresource.xml Makefile $(shell $(GLI
 	$(AM_V_GEN) XMLLINT=$(XMLLINT) $(GLIB_COMPILE_RESOURCES) --target $@ --sourcedir $(top_srcdir)/data --generate --c-name plank $<
 
 plank.h plank.vapi: libplank_la_vala.stamp
+$(libplank_la_VALASOURCES:.vala=.c): libplank_la_vala.stamp
 
 libplank_la_vala.stamp build-abi: libplank_internal_la_vala.stamp $(libplank_la_VALASOURCES) $(libplank_la_BUILT_VALASOURCES) Makefile
 	$(AM_V_VALA)$(VALAC) \
@@ -129,6 +136,7 @@ libplank_la_vala.stamp build-abi: libplank_internal_la_vala.stamp $(libplank_la_
 		--library plank \
 		--symbols build-abi \
 		--vapi plank.vapi \
+		--gresources $(top_srcdir)/data/plank.gresource.xml \
 		$(filter %.vala %.c,$^)
 	$(AM_V_at)touch $@
 
@@ -154,12 +162,17 @@ libplank_internal_la_LIBADD = \
 	$(NULL)
 
 libplank_internal_la_VALASOURCES = \
+	InternalConsts.vala \
+	InternalQuarks.vala \
 	Services/Matcher.vala \
 	Services/WindowControl.vala \
+	Services/Utils.vala \
+	Widgets/DockletViewModel.vala \
 	$(NULL)
 
 libplank_internal_la_SOURCES = \
 	glib-compat.c \
+	gtk-compat.c \
 	$(NULL)
 
 nodist_libplank_internal_la_SOURCES = \
@@ -167,6 +180,7 @@ nodist_libplank_internal_la_SOURCES = \
 	$(NULL)
 
 plank-internal.h plank-internal.vapi: libplank_internal_la_vala.stamp
+$(libplank_internal_la_VALASOURCES:.vala=.c): libplank_internal_la_vala.stamp
 
 libplank_internal_la_vala.stamp: $(libplank_internal_la_VALASOURCES) Makefile
 	$(AM_V_VALA)$(VALAC) \
@@ -181,10 +195,11 @@ libplank_internal_la_vala.stamp: $(libplank_internal_la_VALASOURCES) Makefile
 TESTS = abicheck.sh
 
 CLEANFILES = \
+	libplank_la_vala.stamp \
+	libplank_internal_la_vala.stamp \
 	$(nodist_libplank_la_SOURCES) \
 	$(nodist_libplank_internal_la_SOURCES) \
 	build-abi \
-	plank.deps \
 	plank.pc \
 	plank.vapi \
 	plank.h \
@@ -198,7 +213,7 @@ EXTRA_DIST = \
 	$(libplank_internal_la_VALASOURCES) \
 	abicheck.sh \
 	libplank.symbols \
-	plank.deps.in \
+	plank.deps \
 	plank.pc.in \
 	Version.vala.in \
 	$(NULL)

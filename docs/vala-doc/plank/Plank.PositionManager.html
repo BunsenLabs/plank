@@ -30,15 +30,6 @@
         <div class="package_note"><b>Package:</b> <a href="index.htm">plank</a>
         </div>
         <h2 class="main_title">Content:</h2>
-        <h3 class="main_title">Classes:</h3>
-        <ul class="navi_inline">
-          <li class="class"><a href="Plank.PositionManager.DockItemDrawValue.html">DockItemDrawValue</a> - <span class="brief_description">Contains 
-              all positions and modifications to draw a dock-item on the dock</span></li>
-        </ul>
-        <h3 class="main_title">Structs:</h3>
-        <ul class="navi_inline">
-          <li class="struct"><a href="Plank.PositionManager.PointD.html">PointD</a> - </li>
-        </ul>
         <h3 class="main_title">Properties:</h3>
         <ul class="navi_inline">
           <li class="property"><span class="leaf_code_definition"><span class="main_keyword">public</span> <span class="main_type"><a href="Plank.DockController.html" class="class">DockController</a></span> <b><a href="Plank.PositionManager.controller.html" class="property">controller</a></b> { <span class="main_keyword">construct</span>; }
@@ -119,17 +110,6 @@
                 current theme and icon-size.</span>
             </div></li>
         </ul>
-        <h3 class="main_title">Delegates:</h3>
-        <ul class="navi_inline">
-          <li class="delegate"><span class="leaf_code_definition"><span class="main_keyword">public</span> <span class="main_keyword">delegate</span> <span class="main_keyword">void</span> <b><a href="Plank.PositionManager.DockItemDrawValueFunc.html" class="delegate">DockItemDrawValueFunc</a></b> (<span class="main_type"><a href="Plank.Items.DockItem.html" class="abstract_class">DockItem</a></span> item, <span class="main_type"><a href="Plank.PositionManager.DockItemDrawValue.html" class="class">DockItemDrawValue</a></span> draw_value)
-            </span>
-            <div class="leaf_brief_description"><span class="brief_description">Modify the given DrawItemValue</span>
-            </div></li>
-          <li class="delegate"><span class="leaf_code_definition"><span class="main_keyword">public</span> <span class="main_keyword">delegate</span> <span class="main_keyword">void</span> <b><a href="Plank.PositionManager.DrawValuesFunc.html" class="delegate">DrawValuesFunc</a></b> (<span class="main_type"><span class="class">HashMap</span></span>&lt;<span class="main_type"><a href="Plank.Items.DockElement.html" class="abstract_class">DockElement</a></span>,<span class="main_type"><a href="Plank.PositionManager.DockItemDrawValue.html" class="class">DockItemDrawValue</a></span>&gt; draw_values)
-            </span>
-            <div class="leaf_brief_description"><span class="brief_description">Modify the all DrawItemValue of all dock-items</span>
-            </div></li>
-        </ul>
         <h3 class="main_title">Static methods:</h3>
         <ul class="navi_inline">
           <li class="static_method"><span class="leaf_code_definition"><span class="main_keyword">public</span> <span class="main_keyword">static</span> <span class="main_basic_type"><span class="class">string</span></span>[] <b><a href="Plank.PositionManager.get_monitor_plug_names.html" class="static_method">get_monitor_plug_names</a></b> (<span class="main_type"><span class="class">Screen</span></span> screen)
@@ -150,7 +130,7 @@
             </span>
             <div class="leaf_brief_description"><span class="brief_description">Initializes the position manager.</span>
             </div></li>
-          <li class="method"><span class="leaf_code_definition"><span class="main_keyword">public</span> <span class="main_keyword">void</span> <b><a href="Plank.PositionManager.update.html" class="method">update</a></b> (<span class="main_type"><a href="Plank.Drawing.DockTheme.html" class="class">DockTheme</a></span> theme)
+          <li class="method"><span class="leaf_code_definition"><span class="main_keyword">public</span> <span class="main_keyword">void</span> <b><a href="Plank.PositionManager.update.html" class="method">update</a></b> (<span class="main_type"><a href="Plank.DockTheme.html" class="class">DockTheme</a></span> theme)
             </span>
             <div class="leaf_brief_description"><span class="brief_description">Updates all internal caches.</span>
             </div></li>
@@ -172,34 +152,45 @@
             </span>
             <div class="leaf_brief_description"><span class="brief_description">Call when any cached region needs updating.</span>
             </div></li>
-          <li class="method"><span class="leaf_code_definition"><span class="main_keyword">public</span> <span class="main_type"><a href="Plank.PositionManager.DockItemDrawValue.html" class="class">DockItemDrawValue</a></span> <b><a href="Plank.PositionManager.get_draw_value_for_item.html" class="method">get_draw_value_for_item</a></b> (<span class="main_type"><a href="Plank.Items.DockItem.html" class="abstract_class">DockItem</a></span> item)
+          <li class="method"><span class="leaf_code_definition"><span class="main_keyword">public</span> <span class="main_type"><a href="Plank.DockItemDrawValue.html" class="class">DockItemDrawValue</a></span> <b><a href="Plank.PositionManager.get_draw_value_for_item.html" class="method">get_draw_value_for_item</a></b> (<span class="main_type"><a href="Plank.DockItem.html" class="abstract_class">DockItem</a></span> item)
             </span>
             <div class="leaf_brief_description"><span class="brief_description">The draw-value for a dock item.</span>
             </div></li>
-          <li class="method"><span class="leaf_code_definition"><span class="main_keyword">public</span> <span class="main_keyword">void</span> <b><a href="Plank.PositionManager.update_draw_values.html" class="method">update_draw_values</a></b> (<span class="main_type"><span class="class">ArrayList</span></span>&lt;<span class="main_keyword">weak</span> <span class="main_type"><a href="Plank.Items.DockItem.html" class="abstract_class">DockItem</a></span>&gt; items, <span class="main_type"><a href="Plank.PositionManager.DockItemDrawValueFunc.html" class="delegate">DockItemDrawValueFunc</a></span>? func = <span class="main_optional_parameter">null</span>, <span class="main_type"><a href="Plank.PositionManager.DrawValuesFunc.html" class="delegate">DrawValuesFunc</a></span>? post_func = <span class="main_optional_parameter">null</span>)
+          <li class="method"><span class="leaf_code_definition"><span class="main_keyword">public</span> <span class="main_keyword">void</span> <b><a href="Plank.PositionManager.update_draw_values.html" class="method">update_draw_values</a></b> (<span class="main_type"><span class="class">ArrayList</span></span>&lt;<span class="main_keyword">weak</span> <span class="main_type"><a href="Plank.DockItem.html" class="abstract_class">DockItem</a></span>&gt; items, <span class="main_type"><a href="Plank.DrawValueFunc.html" class="delegate">DrawValueFunc</a></span>? func = <span class="main_literal">null</span>, <span class="main_type"><a href="Plank.DrawValuesFunc.html" class="delegate">DrawValuesFunc</a></span>? post_func = <span class="main_literal">null</span>)
             </span>
             <div class="leaf_brief_description"><span class="brief_description">Update and recalculated all internal draw-values using the given 
                 methodes for custom manipulations.</span>
             </div></li>
-          <li class="method"><span class="leaf_code_definition"><span class="main_keyword">public</span> <span class="main_type"><span class="struct">Rectangle</span></span> <b><a href="Plank.PositionManager.get_hover_region_for_element.html" class="method">get_hover_region_for_element</a></b> (<span class="main_type"><a href="Plank.Items.DockElement.html" class="abstract_class">DockElement</a></span> element)
+          <li class="method"><span class="leaf_code_definition"><span class="main_keyword">public</span> <span class="main_type"><span class="struct">Rectangle</span></span> <b><a href="Plank.PositionManager.get_hover_region_for_element.html" class="method">get_hover_region_for_element</a></b> (<span class="main_type"><a href="Plank.DockElement.html" class="abstract_class">DockElement</a></span> element)
             </span>
             <div class="leaf_brief_description"><span class="brief_description">The cursor region for interacting with a dock element.</span>
             </div></li>
-          <li class="method"><span class="leaf_code_definition"><span class="main_keyword">public</span> <span class="main_keyword">weak</span> <span class="main_type"><a href="Plank.Items.DockItem.html" class="abstract_class">DockItem</a></span>? <b><a href="Plank.PositionManager.get_nearest_item_at.html" class="method">get_nearest_item_at</a></b> (<span class="main_basic_type"><span class="struct">int</span></span> x, <span class="main_basic_type"><span class="struct">int</span></span> y, <span class="main_type"><a href="Plank.Items.DockContainer.html" class="abstract_class">DockContainer</a></span>? container = <span class="main_optional_parameter">null</span>)
+          <li class="method"><span class="leaf_code_definition"><span class="main_keyword">public</span> <span class="main_keyword">weak</span> <span class="main_type"><a href="Plank.DockItem.html" class="abstract_class">DockItem</a></span>? <b><a href="Plank.PositionManager.get_nearest_item_at.html" class="method">get_nearest_item_at</a></b> (<span class="main_basic_type"><span class="struct">int</span></span> x, <span class="main_basic_type"><span class="struct">int</span></span> y, <span class="main_type"><a href="Plank.DockContainer.html" class="abstract_class">DockContainer</a></span>? container = <span class="main_literal">null</span>)
             </span>
             <div class="leaf_brief_description"><span class="brief_description">Get the item which is the nearest at the given coordinates. If a 
                 container is given the result will be restricted to its children.</span>
             </div></li>
-          <li class="method"><span class="leaf_code_definition"><span class="main_keyword">public</span> <span class="main_keyword">void</span> <b><a href="Plank.PositionManager.get_menu_position.html" class="method">get_menu_position</a></b> (<span class="main_type"><a href="Plank.Items.DockItem.html" class="abstract_class">DockItem</a></span> hovered, <span class="main_type"><span class="struct">Requisition</span></span> requisition, <span class="main_keyword">out</span> <span class="main_basic_type"><span class="struct">int</span></span> x, <span class="main_keyword">out</span> <span class="main_basic_type"><span class="struct">int</span></span> y)
+          <li class="method"><span class="leaf_code_definition"><span class="main_keyword">public</span> <span class="main_keyword">weak</span> <span class="main_type"><a href="Plank.DockItem.html" class="abstract_class">DockItem</a></span>? <b><a href="Plank.PositionManager.get_current_target_item.html" class="method">get_current_target_item</a></b> (<span class="main_type"><a href="Plank.DockContainer.html" class="abstract_class">DockContainer</a></span>? container = <span class="main_literal">null</span>)
+            </span>
+            <div class="leaf_brief_description"><span class="brief_description">Get the item which is the appropriate target for a drag'n'drop action.
+                The returned item may not hovered and is meant to be used as target for e.g. DockContainer.add/move_to functions. If a container is 
+                given the result will be restricted to its children.</span>
+            </div></li>
+          <li class="method"><span class="leaf_code_definition"><span class="main_keyword">public</span> <span class="main_keyword">void</span> <b><a href="Plank.PositionManager.get_menu_position.html" class="method">get_menu_position</a></b> (<span class="main_type"><a href="Plank.DockItem.html" class="abstract_class">DockItem</a></span> hovered, <span class="main_type"><span class="struct">Requisition</span></span> requisition, <span class="main_keyword">out</span> <span class="main_basic_type"><span class="struct">int</span></span> x, <span class="main_keyword">out</span> <span class="main_basic_type"><span class="struct">int</span></span> y)
             </span>
             <div class="leaf_brief_description"><span class="brief_description">Get's the x and y position to display a menu for a dock item.</span>
             </div></li>
-          <li class="method"><span class="leaf_code_definition"><span class="main_keyword">public</span> <span class="main_keyword">void</span> <b><a href="Plank.PositionManager.get_hover_position.html" class="method">get_hover_position</a></b> (<span class="main_type"><a href="Plank.Items.DockItem.html" class="abstract_class">DockItem</a></span> hovered, <span class="main_keyword">out</span> <span class="main_basic_type"><span class="struct">int</span></span> x, <span class="main_keyword">out</span> <span class="main_basic_type"><span class="struct">int</span></span> y)
+          <li class="method"><span class="leaf_code_definition"><span class="main_keyword">public</span> <span class="main_keyword">void</span> <b><a href="Plank.PositionManager.get_hover_position.html" class="method">get_hover_position</a></b> (<span class="main_type"><a href="Plank.DockItem.html" class="abstract_class">DockItem</a></span> hovered, <span class="main_keyword">out</span> <span class="main_basic_type"><span class="struct">int</span></span> x, <span class="main_keyword">out</span> <span class="main_basic_type"><span class="struct">int</span></span> y)
             </span>
             <div class="leaf_brief_description"><span class="brief_description">Get's the x and y position to display a hover window for a dock item.
               </span>
             </div></li>
-          <li class="method"><span class="leaf_code_definition"><span class="main_keyword">public</span> <span class="main_keyword">void</span> <b><a href="Plank.PositionManager.get_urgent_glow_position.html" class="method">get_urgent_glow_position</a></b> (<span class="main_type"><a href="Plank.Items.DockItem.html" class="abstract_class">DockItem</a></span> item, <span class="main_keyword">out</span> <span class="main_basic_type"><span class="struct">int</span></span> x, <span class="main_keyword">out</span> <span class="main_basic_type"><span class="struct">int</span></span> y)
+          <li class="method"><span class="leaf_code_definition"><span class="main_keyword">public</span> <span class="main_keyword">void</span> <b><a href="Plank.PositionManager.get_hover_position_at.html" class="method">get_hover_position_at</a></b> (<span class="main_keyword">ref</span> <span class="main_basic_type"><span class="struct">int</span></span> x, <span class="main_keyword">ref</span> <span class="main_basic_type"><span class="struct">int</span></span> y)
+            </span>
+            <div class="leaf_brief_description"><span class="brief_description">Get's the x and y position to display a hover window for the given 
+                coordinates.</span>
+            </div></li>
+          <li class="method"><span class="leaf_code_definition"><span class="main_keyword">public</span> <span class="main_keyword">void</span> <b><a href="Plank.PositionManager.get_urgent_glow_position.html" class="method">get_urgent_glow_position</a></b> (<span class="main_type"><a href="Plank.DockItem.html" class="abstract_class">DockItem</a></span> item, <span class="main_keyword">out</span> <span class="main_basic_type"><span class="struct">int</span></span> x, <span class="main_keyword">out</span> <span class="main_basic_type"><span class="struct">int</span></span> y)
             </span>
             <div class="leaf_brief_description"><span class="brief_description">Get's the x and y position to display the urgent-glow for a dock item.
               </span>
@@ -216,11 +207,15 @@
             </span>
             <div class="leaf_brief_description"><span class="brief_description">Get's the region to display the dock window at.</span>
             </div></li>
+          <li class="method"><span class="leaf_code_definition"><span class="main_keyword">public</span> <span class="main_keyword">void</span> <b><a href="Plank.PositionManager.get_background_padding.html" class="method">get_background_padding</a></b> (<span class="main_keyword">out</span> <span class="main_basic_type"><span class="struct">int</span></span> x, <span class="main_keyword">out</span> <span class="main_basic_type"><span class="struct">int</span></span> y)
+            </span>
+            <div class="leaf_brief_description"><span class="brief_description">Get's the padding between background and icons of the dock.</span>
+            </div></li>
           <li class="method"><span class="leaf_code_definition"><span class="main_keyword">public</span> <span class="main_type"><span class="struct">Rectangle</span></span> <b><a href="Plank.PositionManager.get_background_region.html" class="method">get_background_region</a></b> ()
             </span>
             <div class="leaf_brief_description"><span class="brief_description">Get's the region for background of the dock.</span>
             </div></li>
-          <li class="method"><span class="leaf_code_definition"><span class="main_keyword">public</span> <span class="main_type"><span class="struct">Rectangle</span></span> <b><a href="Plank.PositionManager.get_icon_geometry.html" class="method">get_icon_geometry</a></b> (<span class="main_type"><a href="Plank.Items.ApplicationDockItem.html" class="class">ApplicationDockItem</a></span> item, <span class="main_basic_type"><span class="struct">bool</span></span> for_hidden)
+          <li class="method"><span class="leaf_code_definition"><span class="main_keyword">public</span> <span class="main_type"><span class="struct">Rectangle</span></span> <b><a href="Plank.PositionManager.get_icon_geometry.html" class="method">get_icon_geometry</a></b> (<span class="main_type"><a href="Plank.ApplicationDockItem.html" class="class">ApplicationDockItem</a></span> item, <span class="main_basic_type"><span class="struct">bool</span></span> for_hidden)
             </span>
             <div class="leaf_brief_description"><span class="brief_description">Get the item's icon geometry for the dock.</span>
             </div></li>
@@ -235,65 +230,65 @@
         </ul>
         <h3 class="main_title">Inherited Members:</h3>
         <div class="box">
-          <div class="headline">
-            <div class="text">All known members inherited from class GLib.Object</div>
-            <div class="toggle">
-              <img onclick="toggle_box  (this, 'box-content-10')" src="coll_open.png">&nbsp;</div>
+          <div class="headline" onclick="toggle_box (this, 'box-content-10')">All known members inherited from class GLib.Object</div>
+          <div class="content" id="box-content-10">
+            <div class="column">
+              <ul class="navi_inline">
+                <li class="static_method">@new</li>
+                <li class="static_method">new_valist</li>
+                <li class="static_method">newv</li>
+                <li class="method">add_toggle_ref</li>
+                <li class="method">add_weak_pointer</li>
+                <li class="method">bind_property</li>
+                <li class="method">connect</li>
+                <li class="virtual_method">constructed</li>
+                <li class="method">disconnect</li>
+                <li class="virtual_method">dispose</li>
+                <li class="method">dup_data</li>
+                <li class="method">dup_qdata</li>
+                <li class="method">freeze_notify</li>
+                <li class="method">@get</li>
+              </ul>
             </div>
-            <div class="content" id="box-content-10">
-              <div class="column">
-                <ul class="navi_inline">
-                  <li class="static_method">@new</li>
-                  <li class="static_method">newv</li>
-                  <li class="static_method">new_valist</li>
-                  <li class="method">get_type</li>
-                  <li class="method">get_class</li>
-                  <li class="method">@ref</li>
-                  <li class="method">unref</li>
-                  <li class="method">ref_sink</li>
-                  <li class="method">weak_ref</li>
-                  <li class="method">weak_unref</li>
-                  <li class="method">add_weak_pointer</li>
-                  <li class="method">remove_weak_pointer</li>
-                </ul>
-              </div>
-              <div class="column">
-                <ul class="navi_inline">
-                  <li class="method">@get</li>
-                  <li class="method">@set</li>
-                  <li class="method">get_property</li>
-                  <li class="method">set_property</li>
-                  <li class="method">get_data</li>
-                  <li class="method">set_data</li>
-                  <li class="method">set_data_full</li>
-                  <li class="method">steal_data</li>
-                  <li class="method">get_qdata</li>
-                  <li class="method">set_qdata</li>
-                  <li class="method">set_qdata_full</li>
-                  <li class="method">steal_qdata</li>
-                </ul>
-              </div>
-              <div class="column">
-                <ul class="navi_inline">
-                  <li class="method">freeze_notify</li>
-                  <li class="method">thaw_notify</li>
-                  <li class="virtual_method">dispose</li>
-                  <li class="virtual_method">constructed</li>
-                  <li class="method">notify_property</li>
-                  <li class="method">connect</li>
-                  <li class="method">disconnect</li>
-                  <li class="method">add_toggle_ref</li>
-                  <li class="method">remove_toggle_ref</li>
-                  <li class="method">bind_property</li>
-                  <li class="signal">notify</li>
-                  <li class="field">ref_count</li>
-                </ul>
-              </div>
+            <div class="column">
+              <ul class="navi_inline">
+                <li class="method">get_class</li>
+                <li class="method">get_data</li>
+                <li class="method">get_property</li>
+                <li class="method">get_qdata</li>
+                <li class="method">get_type</li>
+                <li class="method">notify_property</li>
+                <li class="method">@ref</li>
+                <li class="method">ref_sink</li>
+                <li class="method">replace_data</li>
+                <li class="method">replace_qdata</li>
+                <li class="method">remove_toggle_ref</li>
+                <li class="method">remove_weak_pointer</li>
+                <li class="method">@set</li>
+              </ul>
+            </div>
+            <div class="column">
+              <ul class="navi_inline">
+                <li class="method">set_data</li>
+                <li class="method">set_data_full</li>
+                <li class="method">set_property</li>
+                <li class="method">set_qdata</li>
+                <li class="method">set_qdata_full</li>
+                <li class="method">steal_data</li>
+                <li class="method">steal_qdata</li>
+                <li class="method">thaw_notify</li>
+                <li class="method">unref</li>
+                <li class="method">weak_ref</li>
+                <li class="method">weak_unref</li>
+                <li class="signal">notify</li>
+                <li class="field">ref_count</li>
+              </ul>
             </div>
           </div>
         </div>
-      </div><br/>
-      <div class="site_footer">Generated by <a href="http://www.valadoc.org/">Valadoc</a>
       </div>
-    </body>
-  </html>
+    </div><br/>
+    <div class="site_footer">Generated by <a href="http://www.valadoc.org/">Valadoc</a>
+    </div>
+  </body>
+</html>

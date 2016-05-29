@@ -17,9 +17,7 @@
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-using Plank.Services;
-
-namespace Plank.Drawing
+namespace Plank
 {
 	/**
 	 * A themed renderer for dock windows.
@@ -93,14 +91,8 @@ namespace Plank.Drawing
 		[Description(nick = "item-move-time", blurb = "The time (in ms) to move an item to its new position or its addition/removal to/from the dock.")]
 		public int ItemMoveTime { get; set; }
 		
-		static Gtk.StyleContext style_context;
-		
-		static construct
-		{
-			style_context = new Gtk.StyleContext ();
-			style_context.set_path (new Gtk.WidgetPath ());
-			style_context.set_screen (Gdk.Screen.get_default ());
-		}
+		[Description(nick = "cascade-hide", blurb = "Whether background and icons will unhide/hide with different speeds. The top-border of both will leave/hit the screen-edge at the same time.")]
+		public bool CascadeHide { get; set; }
 		
 		public DockTheme (string name)
 		{
@@ -118,7 +110,7 @@ namespace Plank.Drawing
 			HorizPadding = 0.0;
 			TopPadding = -11.0;
 			BottomPadding = 2.5;
-			ItemPadding = 2.0;
+			ItemPadding = 2.5;
 			IndicatorSize = 5.0;
 			IconShadowSize = 1.0;
 			UrgentBounceHeight = 5.0 / 3.0;
@@ -136,6 +128,7 @@ namespace Plank.Drawing
 			GlowPulseTime = 2000;
 			UrgentHueShift = 150;
 			ItemMoveTime = 450;
+			CascadeHide = true;
 		}
 		
 		/**
@@ -145,13 +138,13 @@ namespace Plank.Drawing
 		 * @param height the height of the background
 		 * @param position the position of the dock
 		 * @param model existing surface to use as basis of new surface
-		 * @return a new dock surface with the background drawn on it
+		 * @return a new surface with the background drawn on it
 		 */
-		public DockSurface create_background (int width, int height, Gtk.PositionType position, DockSurface model)
+		public Surface create_background (int width, int height, Gtk.PositionType position, Surface model)
 		{
 			Logger.verbose ("DockTheme.create_background (width = %i, height = %i)", width, height);
 			
-			var surface = new DockSurface.with_dock_surface (width, height, model);
+			var surface = new Surface.with_surface (width, height, model);
 			surface.clear ();
 			
 			if (width <= 0 || height <= 0)
@@ -162,11 +155,11 @@ namespace Plank.Drawing
 				return surface;
 			}
 			
-			DockSurface temp;
+			Surface temp;
 			if (position == Gtk.PositionType.TOP)
-				temp = new DockSurface.with_dock_surface (width, height, surface);
+				temp = new Surface.with_surface (width, height, surface);
 			else
-				temp = new DockSurface.with_dock_surface (height, width, surface);
+				temp = new Surface.with_surface (height, width, surface);
 			
 			draw_background (temp);
 			
@@ -209,13 +202,13 @@ namespace Plank.Drawing
 		 * @param size the size of the indicator
 		 * @param color the color of the indicator
 		 * @param model existing surface to use as basis of new surface
-		 * @return a new dock surface with the indicator drawn on it
+		 * @return a new surface with the indicator drawn on it
 		 */
-		public DockSurface create_indicator (int size, Color color, DockSurface model)
+		public Surface create_indicator (int size, Color color, Surface model)
 		{
 			Logger.verbose ("DockTheme.create_indicator (size = %i)", size);
 			
-			var surface = new DockSurface.with_dock_surface (size, size, model);
+			var surface = new Surface.with_surface (size, size, model);
 			surface.clear ();
 			
 			if (size <= 0)
@@ -250,13 +243,13 @@ namespace Plank.Drawing
 		 * @param size the size of the urgent glow
 		 * @param color the color of the urgent glow
 		 * @param model existing surface to use as basis of new surface
-		 * @return a new dock surface with the urgent glow drawn on it
+		 * @return a new surface with the urgent glow drawn on it
 		 */
-		public DockSurface create_urgent_glow (int size, Color color, DockSurface model)
+		public Surface create_urgent_glow (int size, Color color, Surface model)
 		{
 			Logger.verbose ("DockTheme.create_urgent_glow (size = %i)", size);
 			
-			var surface = new DockSurface.with_dock_surface (size, size, model);
+			var surface = new Surface.with_surface (size, size, model);
 			surface.clear ();
 			
 			if (size <= 0)
@@ -292,7 +285,7 @@ namespace Plank.Drawing
 		 * @param opacity the opacity of the glow
 		 * @param pos the dock's position
 		 */
-		public void draw_active_glow (DockSurface surface, Gdk.Rectangle clip_rect, Gdk.Rectangle rect, Color color, double opacity, Gtk.PositionType pos)
+		public void draw_active_glow (Surface surface, Gdk.Rectangle clip_rect, Gdk.Rectangle rect, Color color, double opacity, Gtk.PositionType pos)
 		{
 			if (opacity <= 0.0 || rect.width <= 0 || rect.height <= 0)
 				return;
@@ -365,7 +358,7 @@ namespace Plank.Drawing
 		 * @param color the color of the badge
 		 * @param count the number for the badge to show
 		 */
-		public void draw_item_count (DockSurface surface, int icon_size, Color color, int64 count)
+		public void draw_item_count (Surface surface, int icon_size, Color color, int64 count)
 		{
 			unowned Cairo.Context cr = surface.Context;
 			
@@ -403,7 +396,7 @@ namespace Plank.Drawing
 			if (Gtk.Widget.get_default_direction () == Gtk.TextDirection.RTL)
 				x += line_width + line_width / 2.0;
 			else
-				x += icon_size - width - line_width / 2.0;
+				x += icon_size - width - 1.5 * line_width;
 			y += line_width + line_width / 2.0;
 			
 			cr.set_line_width (line_width);
@@ -434,11 +427,8 @@ namespace Plank.Drawing
 			layout.set_width ((int) (width * Pango.SCALE));
 			layout.set_ellipsize (Pango.EllipsizeMode.NONE);
 			
-			//FIXME This is not actually needed if we would listen to some signals.
-			// So just to make sure we follow the current theme settings.
-			style_context.invalidate ();
-			
-			var font_description = style_context.get_font (Gtk.StateFlags.NORMAL);
+			unowned Gtk.StyleContext style_context = get_style_context ();
+			unowned Pango.FontDescription font_description = style_context.get_font (style_context.get_state ());
 			font_description.set_absolute_size ((int) (height * Pango.SCALE));
 			font_description.set_weight (Pango.Weight.BOLD);
 			layout.set_font_description (font_description);
@@ -478,7 +468,7 @@ namespace Plank.Drawing
 		 * @param color the color of the progress
 		 * @param progress the value between 0.0 and 1.0
 		 */
-		public void draw_item_progress (DockSurface surface, int icon_size, Color color, double progress)
+		public void draw_item_progress (Surface surface, int icon_size, Color color, double progress)
 		{
 			if (progress < 0)
 				return;

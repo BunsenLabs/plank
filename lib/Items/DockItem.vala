@@ -17,11 +17,7 @@
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-using Plank.Drawing;
-using Plank.Services;
-using Plank.Services.Windows;
-
-namespace Plank.Items
+namespace Plank
 {
 	/**
 	 * The base class for all dock items.
@@ -103,7 +99,7 @@ namespace Plank.Items
 		/**
 		 * The average color of this item's icon.
 		 */
-		public Drawing.Color AverageIconColor { get; protected set; default = Drawing.Color () { red = 0.0, green = 0.0, blue = 0.0, alpha = 0.0 }; }
+		public Color AverageIconColor { get; protected set; default = Color () { red = 0.0, green = 0.0, blue = 0.0, alpha = 0.0 }; }
 		
 		/**
 		 * The filename of the preferences backing file.
@@ -126,7 +122,7 @@ namespace Plank.Items
 		
 		SurfaceCache<DockItem> buffer;
 		SurfaceCache<DockItem> background_buffer;
-		DockSurface? foreground_surface = null;
+		Surface? foreground_surface = null;
 		
 		FileMonitor? launcher_file_monitor = null;
 		FileMonitor? icon_file_monitor = null;
@@ -252,6 +248,8 @@ namespace Plank.Items
 		void reset_foreground_buffer ()
 		{
 			foreground_surface = null;
+			
+			needs_redraw ();
 		}
 		
 		void icon_theme_changed ()
@@ -289,7 +287,7 @@ namespace Plank.Items
 		void icon_file_monitor_start ()
 		{
 			var icon_file = DrawingService.try_get_icon_file (Icon);
-			if (icon_file == null)
+			if (icon_file == null || icon_file.get_uri_scheme () != "file")
 				return;
 			
 			try {
@@ -326,11 +324,7 @@ namespace Plank.Items
 				var launcher = other.get_uri ();
 				Logger.verbose ("Launcher file '%s' moved to '%s'", f.get_uri (), launcher);
 				
-				launcher_file_monitor_stop ();
-				Prefs.notify["Launcher"].disconnect (handle_launcher_changed);
-				Prefs.Launcher = launcher;
-				Prefs.notify["Launcher"].connect (handle_launcher_changed);
-				launcher_file_monitor_start ();
+				replace_launcher (launcher);
 				
 				load_from_launcher ();
 				break;
@@ -389,6 +383,18 @@ namespace Plank.Items
 			launcher_file_monitor = null;
 		}
 		
+		void replace_launcher (string launcher)
+		{
+			if (launcher == Prefs.Launcher)
+				return;
+			
+			launcher_file_monitor_stop ();
+			Prefs.notify["Launcher"].disconnect (handle_launcher_changed);
+			Prefs.Launcher = launcher;
+			Prefs.notify["Launcher"].connect (handle_launcher_changed);
+			launcher_file_monitor_start ();
+		}
+		
 		bool schedule_removal_if_needed ()
 		{
 			if (removal_timer_id > 0U)
@@ -397,7 +403,7 @@ namespace Plank.Items
 			if (launcher_file_monitor == null || is_valid ())
 				return false;
 			
-			removal_timer_id = Gdk.threads_add_timeout (3000, () => {
+			removal_timer_id = Gdk.threads_add_timeout (ITEM_INVALID_DURATION, () => {
 				removal_timer_id = 0U;
 				if (!is_valid ())
 					@delete ();
@@ -419,7 +425,7 @@ namespace Plank.Items
 		}
 		
 		/**
-		 * Returns the dock surface for this item.
+		 * Returns the surface for this item.
 		 *
 		 * It might trigger an internal redraw if the requested size
 		 * isn't cached yet.
@@ -427,17 +433,17 @@ namespace Plank.Items
 		 * @param width width of the icon surface
 		 * @param height height of the icon surface
 		 * @param model existing surface to use as basis of new surface
-		 * @return the dock surface for this item which may not be changed
+		 * @return the surface for this item which may not be changed
 		 */
-		public DockSurface get_surface (int width, int height, DockSurface model)
+		public Surface get_surface (int width, int height, Surface model)
 		{
 			return buffer.get_surface<DockItem> (width, height, model, (DrawFunc<DockItem>) internal_get_surface, null);
 		}
 		
 		[CCode (instance_pos = -1)]
-		DockSurface internal_get_surface (int width, int height, DockSurface model, DrawDataFunc<DockItem>? draw_data_func)
+		Surface internal_get_surface (int width, int height, Surface model, DrawDataFunc<DockItem>? draw_data_func)
 		{
-			var surface = new DockSurface.with_dock_surface (width, height, model);
+			var surface = new Surface.with_surface (width, height, model);
 			
 			Logger.verbose ("DockItem.draw_icon (width = %i, height = %i)", width, height);
 			draw_icon (surface);
@@ -458,13 +464,13 @@ namespace Plank.Items
 		 * @param draw_data_func function which creates/changes the background surface
 		 * @return the background surface of this item which may not be changed
 		 */
-		public DockSurface? get_background_surface (int width, int height, DockSurface model, DrawDataFunc<DockItem>? draw_data_func)
+		public Surface? get_background_surface (int width, int height, Surface model, DrawDataFunc<DockItem>? draw_data_func)
 		{
 			return background_buffer.get_surface<DockItem> (width, height, model, (DrawFunc<DockItem>) internal_get_background_surface, (DrawDataFunc<DockItem>) draw_data_func);
 		}
 		
 		[CCode (instance_pos = -1)]
-		DockSurface? internal_get_background_surface (int width, int height, DockSurface model, DrawDataFunc<DockItem>? draw_data_func)
+		Surface? internal_get_background_surface (int width, int height, Surface model, DrawDataFunc<DockItem>? draw_data_func)
 		{
 			if (draw_data_func == null)
 				return null;
@@ -483,7 +489,7 @@ namespace Plank.Items
 		 * @param draw_data_func function which creates/changes the foreground surface
 		 * @return the background surface of this item which may not be changed
 		 */
-		public DockSurface? get_foreground_surface (int width, int height, DockSurface model, DrawDataFunc<DockItem>? draw_data_func)
+		public Surface? get_foreground_surface (int width, int height, Surface model, DrawDataFunc<DockItem>? draw_data_func)
 		{
 			if (draw_data_func == null) {
 				foreground_surface = null;
@@ -500,7 +506,7 @@ namespace Plank.Items
 		}
 		
 		/**
-		 * Returns a copy of the dock surface for this item.
+		 * Returns a copy of the surface for this item.
 		 *
 		 * It will trigger an internal redraw if the requested size
 		 * isn't matching the cache.
@@ -508,9 +514,9 @@ namespace Plank.Items
 		 * @param width width of the icon surface
 		 * @param height height of the icon surface
 		 * @param model existing surface to use as basis of new surface
-		 * @return the copied dock surface for this item
+		 * @return the copied surface for this item
 		 */
-		public DockSurface get_surface_copy (int width, int height, DockSurface model)
+		public Surface get_surface_copy (int width, int height, Surface model)
 		{
 			return get_surface (width, height, model).copy ();
 		}
@@ -520,7 +526,7 @@ namespace Plank.Items
 		 *
 		 * @param surface the surface to draw on
 		 */
-		protected virtual void draw_icon (DockSurface surface)
+		protected virtual void draw_icon (Surface surface)
 		{
 			Cairo.Surface? icon = null;
 			Gdk.Pixbuf? pbuf = ForcePixbuf;
@@ -558,7 +564,7 @@ namespace Plank.Items
 		 *
 		 * @param surface the surface to draw on
 		 */
-		protected virtual void draw_icon_fast (DockSurface surface)
+		protected virtual void draw_icon_fast (Surface surface)
 		{
 			unowned Cairo.Context cr = surface.Context;
 			var width = surface.Width;
@@ -600,7 +606,15 @@ namespace Plank.Items
 		 */
 		public void copy_values_to (DockItem target)
 		{
-			foreach (var prop in get_class ().list_properties ()) {
+#if VALA_0_32
+			(unowned ParamSpec)[] properties = get_class ().list_properties ();
+#elif VALA_0_26
+			(unowned ParamSpec)[] properties = g_object_class_list_properties (get_class ());
+#else
+			unowned ParamSpec[] properties = get_class ().list_properties ();
+#endif
+			
+			foreach (unowned ParamSpec prop in properties) {
 				// Skip non-copyable properties to avoid warnings
 				if ((prop.flags & ParamFlags.WRITABLE) == 0
 					|| (prop.flags & ParamFlags.CONSTRUCT_ONLY) != 0)
@@ -610,7 +624,7 @@ namespace Plank.Items
 				
 				// Do not copy these
 				if (name == "Container")
-				    continue;
+					continue;
 				
 				var type = prop.value_type;
 				var val = Value (type);

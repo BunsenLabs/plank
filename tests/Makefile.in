@@ -97,11 +97,12 @@ check_PROGRAMS = tests$(EXEEXT) dock$(EXEEXT) $(am__EXEEXT_1)
 subdir = tests
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/gcov.m4 \
-	$(top_srcdir)/m4/gmock.m4 $(top_srcdir)/m4/intltool.m4 \
-	$(top_srcdir)/m4/libtool.m4 $(top_srcdir)/m4/ltoptions.m4 \
-	$(top_srcdir)/m4/ltsugar.m4 $(top_srcdir)/m4/ltversion.m4 \
-	$(top_srcdir)/m4/lt~obsolete.m4 $(top_srcdir)/m4/nls.m4 \
-	$(top_srcdir)/m4/pkg.m4 $(top_srcdir)/configure.ac
+	$(top_srcdir)/m4/gmock.m4 $(top_srcdir)/m4/gsettings.m4 \
+	$(top_srcdir)/m4/intltool.m4 $(top_srcdir)/m4/libtool.m4 \
+	$(top_srcdir)/m4/ltoptions.m4 $(top_srcdir)/m4/ltsugar.m4 \
+	$(top_srcdir)/m4/ltversion.m4 $(top_srcdir)/m4/lt~obsolete.m4 \
+	$(top_srcdir)/m4/nls.m4 $(top_srcdir)/m4/pkg.m4 \
+	$(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 DIST_COMMON = $(srcdir)/Makefile.am $(am__DIST_COMMON)
@@ -267,6 +268,7 @@ DBUS_LAUNCH = @DBUS_LAUNCH@
 DEFS = @DEFS@
 DEPDIR = @DEPDIR@
 DLLTOOL = @DLLTOOL@
+DOCKLET_LDFLAGS = @DOCKLET_LDFLAGS@
 DSYMUTIL = @DSYMUTIL@
 DUMPBIN = @DUMPBIN@
 ECHO_C = @ECHO_C@
@@ -275,23 +277,18 @@ ECHO_T = @ECHO_T@
 EGREP = @EGREP@
 EXEEXT = @EXEEXT@
 FGREP = @FGREP@
-FRAMECLOCK_CFLAGS = @FRAMECLOCK_CFLAGS@
-FRAMECLOCK_LIBS = @FRAMECLOCK_LIBS@
 GCOVR = @GCOVR@
-GEE_DEPEND = @GEE_DEPEND@
 GENHTML = @GENHTML@
 GETTEXT_PACKAGE = @GETTEXT_PACKAGE@
-GLIB_2_34_CFLAGS = @GLIB_2_34_CFLAGS@
-GLIB_2_34_LIBS = @GLIB_2_34_LIBS@
 GLIB_COMPILE_RESOURCES = @GLIB_COMPILE_RESOURCES@
+GLIB_COMPILE_SCHEMAS = @GLIB_COMPILE_SCHEMAS@
 GMOCK_INCLUDEDIR = @GMOCK_INCLUDEDIR@
 GMOCK_SRCDIR = @GMOCK_SRCDIR@
 GMSGFMT = @GMSGFMT@
 GREP = @GREP@
+GSETTINGS_DISABLE_SCHEMAS_COMPILE = @GSETTINGS_DISABLE_SCHEMAS_COMPILE@
 GTEST_INCLUDEDIR = @GTEST_INCLUDEDIR@
 GTEST_SRCDIR = @GTEST_SRCDIR@
-GTK_CFLAGS = @GTK_CFLAGS@
-GTK_LIBS = @GTK_LIBS@
 HIDPI_CFLAGS = @HIDPI_CFLAGS@
 HIDPI_LIBS = @HIDPI_LIBS@
 INSTALL = @INSTALL@
@@ -320,6 +317,7 @@ LTLIBOBJS = @LTLIBOBJS@
 LT_AGE = @LT_AGE@
 LT_CURRENT = @LT_CURRENT@
 LT_REVISION = @LT_REVISION@
+LT_SYS_LIBRARY_PATH = @LT_SYS_LIBRARY_PATH@
 MAINT = @MAINT@
 MAKEINFO = @MAKEINFO@
 MANIFEST_TOOL = @MANIFEST_TOOL@
@@ -394,6 +392,7 @@ datarootdir = @datarootdir@
 docdir = @docdir@
 dvidir = @dvidir@
 exec_prefix = @exec_prefix@
+gsettingsschemadir = @gsettingsschemadir@
 host = @host@
 host_alias = @host_alias@
 host_cpu = @host_cpu@
@@ -416,6 +415,7 @@ pdfdir = @pdfdir@
 prefix = @prefix@
 program_transform_name = @program_transform_name@
 psdir = @psdir@
+runstatedir = @runstatedir@
 sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 srcdir = @srcdir@
@@ -434,6 +434,7 @@ AM_CPPFLAGS = \
 	-DPKGDATADIR=\"$(pkgdatadir)\" \
 	-DLIBDIR=\"$(libdir)\" \
 	-DPKGLIBDIR=\"$(pkglibdir)\" \
+	-DDOCKLETSDIR=\"$(pkglibdir)/docklets\" \
 	$(NULL)
 
 AM_VALAFLAGS = \
@@ -477,7 +478,6 @@ tests_VALASOURCES = \
 	$(NULL)
 
 nodist_tests_SOURCES = \
-	tests_vala.stamp \
 	$(tests_VALASOURCES:.vala=.c) \
 	$(NULL)
 
@@ -488,11 +488,12 @@ dock_VALASOURCES = \
 	$(NULL)
 
 nodist_dock_SOURCES = \
-	dock_vala.stamp \
 	$(dock_VALASOURCES:.vala=.c) \
 	$(NULL)
 
 CLEANFILES = \
+	dock_vala.stamp \
+	tests_vala.stamp \
 	$(nodist_dock_SOURCES) \
 	$(nodist_tests_SOURCES) \
 	$(NULL)
@@ -505,7 +506,10 @@ EXTRA_DIST = \
 	data \
 	$(NULL)
 
-TESTS_ENVIRONMENT = HOME=$(abs_builddir)/home $(am__append_1)
+TESTS_ENVIRONMENT = HOME=$(abs_builddir)/home \
+	GSETTINGS_SCHEMA_DIR=$(abs_top_builddir)/data \
+	PLANK_DOCKLET_DIRS=$(abs_top_builddir)/docklets \
+	$(am__append_1)
 @HAVE_GMOCK_TRUE@GMOCK_LDFLAGS = $(builddir)/libgmock.a
 @HAVE_GMOCK_TRUE@GMOCK_CLFAGS = -I$(GMOCK_INCLUDEDIR) -I$(GTEST_INCLUDEDIR)
 @HAVE_GMOCK_TRUE@gmock_tests_CXXFLAGS = \
@@ -1033,11 +1037,15 @@ uninstall-am:
 .PRECIOUS: Makefile
 
 
+$(tests_VALASOURCES:.vala=.c): tests_vala.stamp
+
 tests_vala.stamp: $(tests_VALASOURCES) $(top_builddir)/lib/plank.vapi $(top_builddir)/lib/plank-internal.vapi Makefile
 	$(AM_V_VALA)$(VALAC) \
 		$(AM_VALAFLAGS) \
 		$(filter %.vala %.c,$^)
 	$(AM_V_at)touch $@
+
+$(dock_VALASOURCES:.vala=.c): dock_vala.stamp
 
 dock_vala.stamp: $(dock_VALASOURCES) $(top_builddir)/lib/plank.vapi $(top_builddir)/lib/plank-internal.vapi Makefile
 	$(AM_V_VALA)$(VALAC) \
@@ -1047,7 +1055,7 @@ dock_vala.stamp: $(dock_VALASOURCES) $(top_builddir)/lib/plank.vapi $(top_buildd
 
 check-local: clean-local
 	$(TESTS_ENVIRONMENT) gtester --verbose --keep-going -o=$(builddir)/test-report.xml $(builddir)/tests
-	$(TESTS_ENVIRONMENT) $(builddir)/dock
+	$(TESTS_ENVIRONMENT) $(builddir)/dock -n test1
 
 clean-local:
 	rm -rf $(abs_builddir)/home $(builddir)/test-report.xml
