@@ -778,7 +778,11 @@
     <keyword type="function" name="Plank.Color.brighten_val" link="Plank.Color.brighten_val.html"/>
     <keyword type="function" name="Plank.Color.darken_val" link="Plank.Color.darken_val.html"/>
     <keyword type="function" name="Plank.Color.darken_by_sat" link="Plank.Color.darken_by_sat.html"/>
+    <keyword type="function" name="Plank.Color.get_hsl" link="Plank.Color.get_hsl.html"/>
+    <keyword type="function" name="Plank.Color.set_hsl" link="Plank.Color.set_hsl.html"/>
     <keyword type="function" name="Plank.Color.to_prefs_string" link="Plank.Color.to_prefs_string.html"/>
+    <keyword type="function" name="Plank.Color.from_hsv" link="Plank.Color.from_hsv.html"/>
+    <keyword type="function" name="Plank.Color.from_hsl" link="Plank.Color.from_hsl.html"/>
     <keyword type="function" name="Plank.Color.from_prefs_string" link="Plank.Color.from_prefs_string.html"/>
     <keyword type="struct" name="Plank.Color" link="Plank.Color.html"/><keyword type="variable" name="Plank.PointD.x" link="Plank.PointD.x.html"/>
     <keyword type="variable" name="Plank.PointD.y" link="Plank.PointD.y.html"/><keyword type="struct" name="Plank.PointD" link="Plank.PointD.html"/>

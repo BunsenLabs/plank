@@ -3,7 +3,7 @@ m4_define([plank_released], [1])
 
 m4_define([plank_major_version], [0])
 m4_define([plank_minor_version], [11])
-m4_define([plank_micro_version], [1])
+m4_define([plank_micro_version], [2])
 m4_define([plank_nano_version], [0])
 
 # If library source has changed since last release, increment revision
@@ -94,7 +94,7 @@ AC_SUBST([API_VERSION])
 # -----------------------------------------------------------
 # Vala
 # -----------------------------------------------------------
-VALA_MIN_VERSION=0.24.0
+VALA_MIN_VERSION=0.26.0
 
 AM_PROG_VALAC([$VALA_MIN_VERSION],
     [],

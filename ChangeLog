@@ -1,3 +1,67 @@
+2016-06-06  Rico Tzschichholz  <ricotz@ubuntu.com>
+
+	Prepare 0.11.2 release
+
+2016-06-05  Rico Tzschichholz  <ricotz@ubuntu.com>
+
+	docklets: Fill in some descriptions and not leave them blank
+
+2016-06-02  Rico Tzschichholz  <ricotz@ubuntu.com>
+
+	lib: Add and enforce some file-count limits
+
+	This is just a safe-guard to prevent plank from "blowing up" if we are
+	about to handle an unreasonable amount of files.
+
+2016-06-01  Rico Tzschichholz  <ricotz@ubuntu.com>
+
+	vapi: Drop internal copy of x11.vapi
+
+2016-06-01  Rico Tzschichholz  <ricotz@ubuntu.com>
+
+	lib: Use vala's Cairo.Surface.get/set_device_scale() bindings
+
+2016-06-01  Rico Tzschichholz  <ricotz@ubuntu.com>
+
+	build: Require valac >= 0.26.0 and drop obsolete conditionals
+
+2016-05-31  Rico Tzschichholz  <ricotz@ubuntu.com>
+
+	po: Update translations
+
+2016-05-12  Rico Tzschichholz  <ricotz@ubuntu.com>
+
+	clippy: Need to own the clipboard's content before allowed to clear it
+
+2016-05-11  Rico Tzschichholz  <ricotz@ubuntu.com>
+
+	po: Update translations
+
+2016-05-11  Rico Tzschichholz  <ricotz@ubuntu.com>
+
+	clippy: text parameter of ClipboardTextReceivedFunc is allowed to
+	be null
+
+2016-05-11  Rico Tzschichholz  <ricotz@ubuntu.com>
+
+	clippy: Pass correct index in menu-item-callback
+
+2016-04-10  Rico Tzschichholz  <ricotz@ubuntu.com>
+
+	drawing/color: Add support for HSL and some convenience functions
+
+2016-04-07  Rico Tzschichholz  <ricotz@ubuntu.com>
+
+	surface: Some minor cleaning
+
+2016-04-04  Rico Tzschichholz  <ricotz@ubuntu.com>
+
+	lib: Update symbols
+
+2016-04-04  Rico Tzschichholz  <ricotz@ubuntu.com>
+
+	Back to development
+
 2016-03-30  Rico Tzschichholz  <ricotz@ubuntu.com>
 
 	Prepare 0.11.1 release

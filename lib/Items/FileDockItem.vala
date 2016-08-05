@@ -146,7 +146,7 @@ namespace Plank
 			var radius = 3 + 6 * height / (128 - 48);
 			double x_scale = 1.0, y_scale = 1.0;
 #if HAVE_HIDPI
-			cairo_surface_get_device_scale (surface.Internal, out x_scale, out y_scale);
+			surface.Internal.get_device_scale (out x_scale, out y_scale);
 #endif
 			var line_width_half = 0.5 * (int) double.max (x_scale, y_scale);
 			
@@ -357,6 +357,7 @@ namespace Plank
 		Gee.ArrayList<File> get_files ()
 		{
 			var files = new Gee.ArrayList<File> ();
+			var count = 0U;
 			
 			try {
 				var enumerator = OwnedFile.enumerate_children (FileAttribute.STANDARD_NAME + ","
@@ -368,6 +369,11 @@ namespace Plank
 				while ((info = enumerator.next_file ()) != null) {
 					if (info.get_is_hidden ())
 						continue;
+					
+					if (count++ >= FOLDER_MAX_FILE_COUNT) {
+						critical ("There are way too many files (%u+) in '%s'.", FOLDER_MAX_FILE_COUNT, OwnedFile.get_path ());
+						break;
+					}
 				
 					files.add (OwnedFile.get_child (info.get_name ()));
 				}

@@ -7,19 +7,19 @@ msgid ""
 msgstr ""
 "Project-Id-Version: plank\n"
 "Report-Msgid-Bugs-To: FULL NAME <EMAIL@ADDRESS>\n"
-"POT-Creation-Date: 2016-02-21 09:20+0000\n"
-"PO-Revision-Date: 2016-02-17 00:36+0000\n"
-"Last-Translator: Rico Tzschichholz <Unknown>\n"
+"POT-Creation-Date: 2016-05-12 09:10+0000\n"
+"PO-Revision-Date: 2016-05-25 06:33+0000\n"
+"Last-Translator: Haruki Ota <ootaharuki99@gmail.com>\n"
 "Language-Team: Japanese <ja@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Launchpad-Export-Date: 2016-02-22 05:40+0000\n"
-"X-Generator: Launchpad (build 17925)\n"
+"X-Launchpad-Export-Date: 2016-05-26 05:32+0000\n"
+"X-Generator: Launchpad (build 18053)\n"
 
 #: ../data/plank.appdata.xml.in.h:1 ../data/plank.desktop.in.h:1
 msgid "Stupidly simple."
-msgstr "はバカみたいにシンプルです。"
+msgstr "超シンプル"
 
 #: ../data/plank.appdata.xml.in.h:2
 msgid ""
@@ -38,31 +38,31 @@ msgstr ""
 
 #: ../data/ui/preferences.ui.h:1
 msgid "Theme:"
-msgstr ""
+msgstr "テーマ:"
 
 #: ../data/ui/preferences.ui.h:2
 msgid "Position:"
-msgstr ""
+msgstr "位置:"
 
 #: ../data/ui/preferences.ui.h:3
 msgid "Left"
-msgstr ""
+msgstr "左端"
 
 #: ../data/ui/preferences.ui.h:4
 msgid "Right"
-msgstr ""
+msgstr "右端"
 
 #: ../data/ui/preferences.ui.h:5
 msgid "Top"
-msgstr ""
+msgstr "上部"
 
 #: ../data/ui/preferences.ui.h:6
 msgid "Bottom"
-msgstr ""
+msgstr "下部"
 
 #: ../data/ui/preferences.ui.h:7
 msgid "Alignment:"
-msgstr ""
+msgstr "寄せ方:"
 
 #: ../data/ui/preferences.ui.h:8
 msgid "Fill"
@@ -86,7 +86,7 @@ msgstr "プライマリディスプレイ上:"
 
 #: ../data/ui/preferences.ui.h:13
 msgid "Offset in percent from the center of the screen-edge"
-msgstr "スクリーン端の中央からのオフセット"
+msgstr "スクリーン中央からの相対位置"
 
 #: ../data/ui/preferences.ui.h:14
 msgid "Icon Alignment:"
@@ -134,7 +134,7 @@ msgstr "隠れるまでの時間:"
 
 #: ../data/ui/preferences.ui.h:25
 msgid "Delay in ms before hiding the dock"
-msgstr "ドックを隠すまでの時間"
+msgstr "ドックを隠すまでの時間(ミリ秒)"
 
 #: ../data/ui/preferences.ui.h:26
 msgid "Unhide Delay:"
@@ -142,11 +142,11 @@ msgstr "復帰までの時間:"
 
 #: ../data/ui/preferences.ui.h:27
 msgid "Delay in ms before showing the dock"
-msgstr "ドックの復帰までの時間"
+msgstr "ドックの復帰までの時間(ミリ秒)"
 
 #: ../data/ui/preferences.ui.h:28
 msgid "Pressure Reveal:"
-msgstr ""
+msgstr "押し込んで表示:"
 
 #: ../data/ui/preferences.ui.h:29
 msgid "Item Management"
@@ -154,7 +154,7 @@ msgstr "アイテム管理"
 
 #: ../data/ui/preferences.ui.h:30
 msgid "Show Unpinned:"
-msgstr ""
+msgstr "固定してないソフトを表示する:"
 
 #: ../data/ui/preferences.ui.h:31
 msgid "Restrict to Workspace:"
@@ -165,18 +165,10 @@ msgid "Lock Icons:"
 msgstr "アイコンをロック:"
 
 #: ../data/ui/preferences.ui.h:33
-msgid "Automatic Pinning:"
-msgstr "自動的にピン:"
+msgid "Behaviour"
+msgstr "挙動"
 
 #: ../data/ui/preferences.ui.h:34
-msgid "Show Item for Dock:"
-msgstr "ドックにアイテムを表示"
-
-#: ../data/ui/preferences.ui.h:35
-msgid "Behaviour"
-msgstr ""
-
-#: ../data/ui/preferences.ui.h:36
 msgid "Docklets"
 msgstr ""
 
@@ -184,30 +176,31 @@ msgstr ""
 msgid "Drop to add to dock"
 msgstr "ドロップしてドックに追加"
 
-#: ../lib/Factories/AbstractMain.vala:365 ../src/Main.vala:75
+#: ../lib/Factories/AbstractMain.vala:422 ../src/Main.vala:75
 msgid "translator-credits"
 msgstr ""
 "Launchpad Contributions:\n"
+"  Haruki Ota https://launchpad.net/~ootaharuki99-5\n"
 "  Rico Tzschichholz https://launchpad.net/~ricotz\n"
 "  Shota Shimazu https://launchpad.net/~hornet-live-mf\n"
 "  Shota Shimazu https://launchpad.net/~xylophone-project\n"
 "  Takefumi Nagata https://launchpad.net/~rago1975\n"
 "  smp https://launchpad.net/~cheat-hc0-ms"
 
-#: ../lib/Items/ApplicationDockItem.vala:446
-#: ../lib/Items/FileDockItem.vala:314 ../lib/Items/FileDockItem.vala:336
+#: ../lib/Items/ApplicationDockItem.vala:417 ../lib/Items/FileDockItem.vala:314
+#: ../lib/Items/FileDockItem.vala:336
 msgid "_Keep in Dock"
 msgstr "ドックに追加(_K)"
 
-#: ../lib/Items/ApplicationDockItem.vala:454
+#: ../lib/Items/ApplicationDockItem.vala:425
 msgid "_Close All"
 msgstr "全て閉じる(_C)"
 
-#: ../lib/Items/ApplicationDockItem.vala:454
+#: ../lib/Items/ApplicationDockItem.vala:425
 msgid "_Close"
 msgstr "閉じる(_C)"
 
-#: ../lib/Items/ApplicationDockItem.vala:526
+#: ../lib/Items/ApplicationDockItem.vala:497
 #, c-format
 msgid "Drop to open with %s"
 msgstr "ドロップして %s で開く"
@@ -218,11 +211,11 @@ msgstr "ファイルブラウザで開く(_O)"
 
 #: ../lib/Items/FileDockItem.vala:342
 msgid "_Open"
-msgstr ""
+msgstr "開く(_O)"
 
 #: ../lib/Items/FileDockItem.vala:346
 msgid "Open Containing _Folder"
-msgstr ""
+msgstr "親フォルダーを開く(_F)"
 
 #: ../lib/Items/PlaceholderDockItem.vala:37
 msgid "Drop applications or files here"
@@ -236,6 +229,6 @@ msgstr "オンラインでヘルプを表示(_H)..."
 msgid "_Translate This Application..."
 msgstr ""
 
-#: ../lib/Widgets/PreferencesWindow.vala:94
+#: ../lib/Widgets/PreferencesWindow.vala:90
 msgid "Preferences"
 msgstr "設定"
